@@ -1,0 +1,786 @@
+:: Stability of the 7-3 Compressor Circuit for {W}allace Tree. Part {I}
+::  by Katsumi Wasaki
+:: 
+:: Received December 30, 2019
+:: Copyright (c) 2019-2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies XBOOLEAN, XBOOLE_0, SUBSET_1, RELAT_1, NUMBERS, ARYTM_3,
+      XXREAL_0, STRUCT_0, FUNCT_1, FUNCT_4, FINSEQ_1, FINSEQ_2, PARTFUN1,
+      MCART_1, FSM_1, MARGREL1, MSUALG_1, LATTICES, MSAFREE2, CIRCUIT1,
+      CIRCUIT2, CIRCCOMB, FACIRC_1, TWOSCOMP, GFACIRC1, WALLACE1;
+ notations TARSKI, XBOOLE_0, ENUMSET1, XTUPLE_0, SUBSET_1, NAT_1, RELAT_1,
+      NUMBERS, XCMPLX_0, XXREAL_0, STRUCT_0, FUNCT_1, FUNCT_2, FINSEQ_1,
+      FINSEQ_2, PARTFUN1, MARGREL1, BINARITH, MSUALG_1, MSAFREE2, CIRCUIT1,
+      CIRCUIT2, CIRCCOMB, FACIRC_1, TWOSCOMP, GFACIRC1, CIRCCMB3;
+ constructors NUMBERS, VALUED_0, RELSET_1, ENUMSET1, BINARITH, CIRCUIT2,
+      FACIRC_1, TWOSCOMP, GFACIRC1, CIRCCMB3;
+ registrations ORDINAL1, XTUPLE_0, CARD_3, NAT_1, RELAT_1, STRUCT_0, FUNCT_1,
+      FINSEQ_1, MARGREL1, MSAFREE2, CIRCCOMB, FACIRC_1, CIRCCMB3;
+ requirements REAL, NUMERALS, SUBSET, BOOLE, ARITHM;
+
+
+begin :: Properties of `Intermediate' STC Circuit Structure (LAYER-I)
+::=========================================================================
+
+registration
+  let x1,x2,x3,x4 be non pair object;
+  cluster {x1,x2,x3,x4} -> without_pairs;
+  let x5 be non pair object;
+  cluster {x1,x2,x3,x4,x5} -> without_pairs;
+  let x6 be non pair object;
+  cluster {x1,x2,x3,x4,x5,x6} -> without_pairs;
+  let x7 be non pair object;
+  cluster {x1,x2,x3,x4,x5,x6,x7} -> without_pairs;
+end;
+
+::---------------------------------------------------------------
+:: 1. `Intermediate' Circuit [Layer-I]
+::---------------------------------------------------------------
+
+::---------------------------------------------------------------
+:: 1-1. Definition for `Intermediate' Circuit [Layer-I]
+::---------------------------------------------------------------
+
+::---------------------------------------
+:: Combined Circuit Structure of STC_TYPE0_Inter_Inter.
+
+definition
+  let x1,x2,x3,x5,x6,x7 be set;
+  func STC0IIStr(x1,x2,x3,x5,x6,x7) ->
+    unsplit gate`1=arity gate`2isBoolean
+    non void strict non empty ManySortedSign
+  equals
+:: WALLACE1:def 1
+    BitGFA0Str(x1,x2,x3) +* BitGFA0Str(x5,x6,x7);
+end;
+
+definition
+  let x1,x2,x3,x5,x6,x7 be set;
+  func STC0IICirc(x1,x2,x3,x5,x6,x7) ->
+    strict Boolean gate`2=den Circuit of STC0IIStr(x1,x2,x3,x5,x6,x7)
+  equals
+:: WALLACE1:def 2
+    BitGFA0Circ(x1,x2,x3) +* BitGFA0Circ(x5,x6,x7);
+end;
+
+::-----------------------------------------------
+:: 1-2. Properties of `Intermediate' Circuit Structure
+::-----------------------------------------------
+
+::---------------------------------------
+:: InnerVertices of STC_TYPE0_Inter_Inter.
+
+theorem :: WALLACE1:1
+  for x1,x2,x3,x5,x6,x7 being set holds
+  InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) =
+    {[<*x1,x2*>,xor2], GFA0AdderOutput(x1,x2,x3)} \/
+    {[<*x1,x2*>,and2], [<*x2,x3*>,and2], [<*x3,x1*>,and2],
+                       GFA0CarryOutput(x1,x2,x3)} \/
+    {[<*x5,x6*>,xor2], GFA0AdderOutput(x5,x6,x7)} \/
+    {[<*x5,x6*>,and2], [<*x6,x7*>,and2], [<*x7,x5*>,and2],
+                       GFA0CarryOutput(x5,x6,x7)};
+
+theorem :: WALLACE1:2 :: ThSTC0IIS2:
+  for x1,x2,x3,x5,x6,x7 being set holds
+    InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) is Relation;
+
+::---------------------------------------
+:: InputVertices of of STC_TYPE0_Inter_Inter.
+
+theorem :: WALLACE1:3
+  for x1,x2,x3,x5,x6,x7 being non pair set holds
+    InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) = {x1,x2,x3,x5,x6,x7};
+
+theorem :: WALLACE1:4
+  for x1,x2,x3,x5,x6,x7 being non pair set holds
+    InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) is without_pairs;
+
+::---------------------------------------
+:: The Element of Carriers, InnerVertices and InputVertices of
+:: STC_TYPE0_Inter_Inter.
+
+theorem :: WALLACE1:5
+  for x1,x2,x3,x5,x6,x7 being set holds
+   x1 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   x2 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   x3 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   x5 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   x6 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   x7 in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x1,x2*>,xor2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3)
+                    in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x1,x2*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x2,x3*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x3,x1*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x5,x6*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x6,x7*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x7,x5*>,and2] in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in the carrier of STC0IIStr(x1,x2,x3,x5,x6,x7);
+
+theorem :: WALLACE1:6
+  for x1,x2,x3,x5,x6,x7 being set holds
+   [<*x1,x2*>,xor2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3)
+                    in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x1,x2*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x2,x3*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x3,x1*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x5,x6*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x6,x7*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   [<*x7,x5*>,and2] in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7);
+
+theorem :: WALLACE1:7
+  for x1,x2,x3,x5,x6,x7 being non pair set holds
+    x1 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+    x2 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+    x3 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+    x5 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+    x6 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7) &
+    x7 in InputVertices STC0IIStr(x1,x2,x3,x5,x6,x7);
+
+::-------------------------------------------
+:: 1-3. Output Definitions of the Combined Circuit
+::-------------------------------------------
+
+:: Internal Signal Outputs of STC_TYPE0_Inter_Inter.
+
+definition
+  let x1,x2,x3,x5,x6,x7 be set;
+  func STC0IICarryOutputC1(x1,x2,x3,x5,x6,x7) ->
+          Element of InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) equals
+:: WALLACE1:def 3
+     GFA0CarryOutput(x1,x2,x3);
+
+  func STC0IIAdderOutputA1(x1,x2,x3,x5,x6,x7) ->
+          Element of InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) equals
+:: WALLACE1:def 4
+     GFA0AdderOutput(x1,x2,x3);
+
+  func STC0IICarryOutputC2(x1,x2,x3,x5,x6,x7) ->
+          Element of InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) equals
+:: WALLACE1:def 5
+     GFA0CarryOutput(x5,x6,x7);
+
+  func STC0IIAdderOutputA2(x1,x2,x3,x5,x6,x7) ->
+          Element of InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7) equals
+:: WALLACE1:def 6
+     GFA0AdderOutput(x5,x6,x7);
+end;
+
+:: -----------------------------------
+:: Proposition #1-1 (Internal Circuit Outputs after Two-steps)
+
+theorem :: WALLACE1:8       :: for Output C1, A1, C2 and A2
+  for x1,x2,x3,x5,x6,x7 being non pair set
+   for s being State of STC0IICirc(x1,x2,x3,x5,x6,x7)
+    for a1,a2,a3,a5,a6,a7 being Element of BOOLEAN st
+        a1 = s.x1 & a2 = s.x2 & a3 = s.x3 & a5 = s.x5 & a6 = s.x6 & a7 = s.x7
+  holds Following(s,2).STC0IICarryOutputC1(x1,x2,x3,x5,x6,x7)
+      = (a1 '&' a2) 'or' (a2 '&' a3) 'or' (a3 '&' a1) &
+        Following(s,2).STC0IIAdderOutputA1(x1,x2,x3,x5,x6,x7)
+      = a1 'xor' a2 'xor' a3 &
+        Following(s,2).STC0IICarryOutputC2(x1,x2,x3,x5,x6,x7)
+      = (a5 '&' a6) 'or' (a6 '&' a7) 'or' (a7 '&' a5) &
+        Following(s,2).STC0IIAdderOutputA2(x1,x2,x3,x5,x6,x7)
+      = a5 'xor' a6 'xor' a7 &
+        Following(s,2).x1 = a1 & Following(s,2).x2 = a2 &
+        Following(s,2).x3 = a3 &
+        Following(s,2).x5 = a5 & Following(s,2).x6 = a6 &
+        Following(s,2).x7 = a7;
+
+:: --------------------------
+:: Proposition #1-2 (Stability after Two-steps)
+
+theorem :: WALLACE1:9
+  for x1,x2,x3,x5,x6,x7 being non pair set
+   for s being State of STC0IICirc(x1,x2,x3,x5,x6,x7)
+    holds Following(s,2) is stable;
+
+::=========================================================================
+begin :: Properties of `Intermediate' STC Circuit Structure (LAYER-II)
+::=========================================================================
+
+::---------------------------------------------------------------
+:: 2. `Intermediate' Circuit [Layer-II]
+::---------------------------------------------------------------
+
+::---------------------------------------------------------------
+:: 2-1. Definition for `Intermediate' Circuit [Layer-II]
+::---------------------------------------------------------------
+
+:: Combined Circuit Structure of STC_TYPE0_Inter.
+
+definition
+ let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0IStr(x1,x2,x3,x4,x5,x6,x7) ->
+     unsplit gate`1=arity gate`2isBoolean
+     non void strict non empty ManySortedSign
+  equals
+:: WALLACE1:def 7
+    STC0IIStr(x1,x2,x3,x5,x6,x7) +*
+    BitGFA0Str(GFA0AdderOutput(x1,x2,x3),
+               GFA0AdderOutput(x5,x6,x7),x4);
+end;
+
+definition
+ let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0ICirc(x1,x2,x3,x4,x5,x6,x7) ->
+    strict Boolean gate`2=den Circuit of STC0IStr(x1,x2,x3,x4,x5,x6,x7)
+  equals
+:: WALLACE1:def 8
+    STC0IICirc(x1,x2,x3,x5,x6,x7) +*
+    BitGFA0Circ(GFA0AdderOutput(x1,x2,x3),
+                GFA0AdderOutput(x5,x6,x7),x4);
+end;
+
+::-----------------------------------------------
+:: 2-2. Properties of `Intermediate' STC Circuit Structure
+::-----------------------------------------------
+
+:: -----------------------------------
+:: InnerVertices of of STC_TYPE0_Inter.
+
+theorem :: WALLACE1:10
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+  InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) =
+    {[<*x1,x2*>,xor2], GFA0AdderOutput(x1,x2,x3)} \/
+    {[<*x1,x2*>,and2], [<*x2,x3*>,and2], [<*x3,x1*>,and2],
+                       GFA0CarryOutput(x1,x2,x3)} \/
+    {[<*x5,x6*>,xor2], GFA0AdderOutput(x5,x6,x7)} \/
+    {[<*x5,x6*>,and2], [<*x6,x7*>,and2], [<*x7,x5*>,and2],
+                       GFA0CarryOutput(x5,x6,x7)} \/
+    {[<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2],
+        GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                        GFA0AdderOutput(x5,x6,x7),x4)} \/
+    {[<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2],
+     [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2],
+     [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2],
+        GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                        GFA0AdderOutput(x5,x6,x7),x4)};
+
+theorem :: WALLACE1:11 :: ThSTC0IS2:
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+    InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) is Relation;
+
+theorem :: WALLACE1:12
+  for x1,x2,x3,x5,x6,x7 being non pair set
+   for x4 being set st
+    x4 <> [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2] &
+    x4 <> [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2] &
+    not x4 in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7)
+  holds
+    InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) = {x1,x2,x3,x4,x5,x6,x7};
+
+theorem :: WALLACE1:13
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) = {x1,x2,x3,x4,x5,x6,x7};
+
+theorem :: WALLACE1:14
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) is without_pairs;
+
+:: -----------------------------------
+:: The Element of Carriers, InnerVertices and InputVertices of STC_TYPE0_Inter.
+
+theorem :: WALLACE1:15
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+   x1 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x2 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x3 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x4 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x5 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x6 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   x7 in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,xor2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x2,x3*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x3,x1*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2]
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2]
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2]
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2]
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x6,x7*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x7,x5*>,and2] in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in the carrier of STC0IStr(x1,x2,x3,x4,x5,x6,x7);
+
+theorem :: WALLACE1:16
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+   [<*x1,x2*>,xor2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x2,x3*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x3,x1*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2]
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2]
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2]
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2]
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x6,x7*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x7,x5*>,and2] in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7);
+
+theorem :: WALLACE1:17 :: ThSTC0IS8:
+  for x1,x2,x3,x5,x6,x7 being non pair set
+   for x4 being set st
+    x4 <> [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2] &
+    x4 <> [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2] &
+    not x4 in InnerVertices STC0IIStr(x1,x2,x3,x5,x6,x7)
+  holds
+    x1 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x2 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x3 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x4 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x5 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x6 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x7 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7);
+
+theorem :: WALLACE1:18
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    x1 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x2 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x3 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x4 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x5 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x6 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) &
+    x7 in InputVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7);
+
+::-------------------------------------------
+:: 2-3. Output Definitions of the Combined Circuit
+::-------------------------------------------
+
+:: Def. External/Internal Signal Outputs of of STC_TYPE0_Inter.
+
+definition
+  let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 9
+    GFA0CarryOutput(x1,x2,x3);
+
+  func STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 10
+    GFA0CarryOutput(x5,x6,x7);
+
+  func STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 11
+    GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7),x4);
+
+  func STC0IAdderOutputA3(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 12
+    GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7),x4);
+end;
+
+:: -----------------------------------
+:: Proposition #2-1 (Internal Circuit Outputs after 2,4-steps)
+
+theorem :: WALLACE1:19 :: ThSTC0IS17:      :: for Output C1, C2, C3 and A3
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set
+   for s being State of STC0ICirc(x1,x2,x3,x4,x5,x6,x7)
+    for a1,a2,a3,a4,a5,a6,a7 being Element of BOOLEAN st
+        a1 = s.x1 & a2 = s.x2 & a3 = s.x3 & a4 = s.x4 &
+        a5 = s.x5 & a6 = s.x6 & a7 = s.x7
+  holds Following(s,2).STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7)
+      = (a1 '&' a2) 'or' (a2 '&' a3) 'or' (a3 '&' a1) &
+        Following(s,2).STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7)
+      = (a5 '&' a6) 'or' (a6 '&' a7) 'or' (a7 '&' a5) &
+        Following(s,4).STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7)
+      = ((a1 'xor' a2 'xor' a3) '&' (a5 'xor' a6 'xor' a7)) 'or'
+        ((a5 'xor' a6 'xor' a7) '&' a4) 'or'
+        (a4 '&' (a1 'xor' a2 'xor' a3)) &
+        Following(s,4).STC0IAdderOutputA3(x1,x2,x3,x4,x5,x6,x7)
+      = a1 'xor' a2 'xor' a3 'xor' a4 'xor' a5 'xor' a6 'xor' a7 &
+        Following(s,4).x1 = a1 & Following(s,4).x2 = a2 &
+        Following(s,4).x3 = a3 & Following(s,4).x4 = a4 &
+        Following(s,4).x5 = a5 & Following(s,4).x6 = a6 &
+        Following(s,4).x7 = a7;
+
+:: --------------------------
+:: Proposition #2-2 (Stability after Four-steps)
+
+theorem :: WALLACE1:20
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set
+   for s being State of STC0ICirc(x1,x2,x3,x4,x5,x6,x7)
+    holds Following(s,4) is stable;
+
+
+::=========================================================================
+begin :: Properties of STC Circuit Structure (LAYER-III)
+::=========================================================================
+
+::---------------------------------------------------------------
+:: 3. STC Circuit [Layer-III]
+::---------------------------------------------------------------
+
+::---------------------------------------------------------------
+:: 3-1. Definition for STC Circuit [Layer-III]
+::---------------------------------------------------------------
+
+:: Combined Circuit Structure of STC_TYPE0.
+
+definition
+ let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0Str(x1,x2,x3,x4,x5,x6,x7) ->
+     unsplit gate`1=arity gate`2isBoolean
+     non void strict non empty ManySortedSign
+  equals
+:: WALLACE1:def 13
+    STC0IStr(x1,x2,x3,x4,x5,x6,x7) +*
+    BitGFA0Str(STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+               STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7),
+               STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7));
+end;
+
+definition
+ let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0Circ(x1,x2,x3,x4,x5,x6,x7) ->
+    strict Boolean gate`2=den Circuit of STC0Str(x1,x2,x3,x4,x5,x6,x7)
+  equals
+:: WALLACE1:def 14
+    STC0ICirc(x1,x2,x3,x4,x5,x6,x7) +*
+    BitGFA0Circ(STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+                STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7),
+                STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7));
+end;
+
+::-----------------------------------------------
+:: 3-2. Properties of STC Circuit Structure
+::-----------------------------------------------
+
+:: -----------------------------------
+:: InnerVertices of of STC_TYPE0
+
+theorem :: WALLACE1:21
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+  InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) =
+    InnerVertices STC0IStr(x1,x2,x3,x4,x5,x6,x7) \/
+    {[<*STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+        STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7)*>,xor2],
+      GFA0AdderOutput(STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+                      STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7),
+                      STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7))} \/
+    {[<*STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+        STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7)*>,and2],
+     [<*STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7),
+        STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7)*>,and2],
+     [<*STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7),
+        STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7)*>,and2],
+      GFA0CarryOutput(STC0ICarryOutputC1(x1,x2,x3,x4,x5,x6,x7),
+                      STC0ICarryOutputC2(x1,x2,x3,x4,x5,x6,x7),
+                      STC0ICarryOutputC3(x1,x2,x3,x4,x5,x6,x7))};
+
+theorem :: WALLACE1:22   :: expanded all InnerVertices by inputs and GFA0's
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+  InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) =
+    {[<*x1,x2*>,xor2], GFA0AdderOutput(x1,x2,x3)} \/
+    {[<*x1,x2*>,and2], [<*x2,x3*>,and2], [<*x3,x1*>,and2],
+                       GFA0CarryOutput(x1,x2,x3)} \/
+    {[<*x5,x6*>,xor2], GFA0AdderOutput(x5,x6,x7)} \/
+    {[<*x5,x6*>,and2], [<*x6,x7*>,and2], [<*x7,x5*>,and2],
+                       GFA0CarryOutput(x5,x6,x7)} \/
+    {[<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2],
+        GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                        GFA0AdderOutput(x5,x6,x7),x4)} \/
+    {[<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2],
+     [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2],
+     [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2],
+        GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                        GFA0AdderOutput(x5,x6,x7),x4)} \/
+    {[<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,xor2],
+        GFA0AdderOutput(GFA0CarryOutput(x1,x2,x3),
+                        GFA0CarryOutput(x5,x6,x7),
+                        GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                        GFA0AdderOutput(x5,x6,x7),x4))} \/
+    {[<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,and2],
+     [<*GFA0CarryOutput(x5,x6,x7),
+                        GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                        GFA0AdderOutput(x5,x6,x7),x4)*>,and2],
+     [<*GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                        GFA0AdderOutput(x5,x6,x7),x4),
+        GFA0CarryOutput(x1,x2,x3)*>,and2],
+        GFA0CarryOutput(GFA0CarryOutput(x1,x2,x3),
+                        GFA0CarryOutput(x5,x6,x7),
+                        GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                        GFA0AdderOutput(x5,x6,x7),x4))};
+
+theorem :: WALLACE1:23 :: ThSTC0S2:
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+    InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) is Relation;
+
+theorem :: WALLACE1:24
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) = {x1,x2,x3,x4,x5,x6,x7};
+
+theorem :: WALLACE1:25 :: ThSTC0S5:
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) is without_pairs;
+
+:: -----------------------------------
+:: The Element of Carriers, InnerVertices and InputVertices of STC_TYPE0.
+
+theorem :: WALLACE1:26
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+   x1 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x2 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x3 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x4 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x5 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x6 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   x7 in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,xor2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x2,x3*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x3,x1*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x6,x7*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x7,x5*>,and2] in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3) :: Lv2
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,xor2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0CarryOutput(x1,x2,x3),
+                   GFA0CarryOutput(x5,x6,x7),
+                   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                   GFA0AdderOutput(x5,x6,x7),x4))
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x5,x6,x7),
+                   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                   GFA0AdderOutput(x5,x6,x7),x4)*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                      GFA0AdderOutput(x5,x6,x7),x4),
+                      GFA0CarryOutput(x1,x2,x3)*>,and2]
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0CarryOutput(x1,x2,x3),
+                      GFA0CarryOutput(x5,x6,x7),
+                      GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                      GFA0AdderOutput(x5,x6,x7),x4))
+                    in the carrier of STC0Str(x1,x2,x3,x4,x5,x6,x7);
+
+theorem :: WALLACE1:27
+  for x1,x2,x3,x4,x5,x6,x7 being set holds
+   [<*x1,x2*>,xor2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x1,x2*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x2,x3*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x3,x1*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,xor2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x5,x6*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x6,x7*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x7,x5*>,and2] in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x1,x2,x3)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x1,x2,x3)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(x5,x6,x7)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(x5,x6,x7)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,xor2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7)*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0AdderOutput(x5,x6,x7),x4*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*x4,GFA0AdderOutput(x1,x2,x3)*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                   GFA0AdderOutput(x5,x6,x7),x4)
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,xor2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0AdderOutput(GFA0CarryOutput(x1,x2,x3),
+                   GFA0CarryOutput(x5,x6,x7),
+                   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                   GFA0AdderOutput(x5,x6,x7),x4))
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x1,x2,x3),GFA0CarryOutput(x5,x6,x7)*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(x5,x6,x7),
+                   GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                   GFA0AdderOutput(x5,x6,x7),x4)*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   [<*GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                      GFA0AdderOutput(x5,x6,x7),x4),
+                      GFA0CarryOutput(x1,x2,x3)*>,and2]
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+   GFA0CarryOutput(GFA0CarryOutput(x1,x2,x3),
+                      GFA0CarryOutput(x5,x6,x7),
+                      GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                      GFA0AdderOutput(x5,x6,x7),x4))
+                    in InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7);
+
+theorem :: WALLACE1:28
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set holds
+    x1 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x2 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x3 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x4 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x5 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x6 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) &
+    x7 in InputVertices STC0Str(x1,x2,x3,x4,x5,x6,x7);
+
+::-------------------------------------------
+:: 3-3. Output Definitions of the Combined Circuit
+::-------------------------------------------
+
+:: Def. External Signal Outputs of of STC_TYPE0.
+
+definition
+  let x1,x2,x3,x4,x5,x6,x7 be set;
+  func STC0OutputS0(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 15
+    GFA0AdderOutput(GFA0AdderOutput(x1,x2,x3),GFA0AdderOutput(x5,x6,x7),x4);
+
+  func STC0OutputS1(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 16
+    GFA0AdderOutput(GFA0CarryOutput(x1,x2,x3),
+                    GFA0CarryOutput(x5,x6,x7),
+                    GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                    GFA0AdderOutput(x5,x6,x7),x4));
+
+  func STC0OutputS2(x1,x2,x3,x4,x5,x6,x7) ->
+         Element of InnerVertices STC0Str(x1,x2,x3,x4,x5,x6,x7) equals
+:: WALLACE1:def 17
+    GFA0CarryOutput(GFA0CarryOutput(x1,x2,x3),
+                    GFA0CarryOutput(x5,x6,x7),
+                    GFA0CarryOutput(GFA0AdderOutput(x1,x2,x3),
+                                    GFA0AdderOutput(x5,x6,x7),x4));
+end;
+
+:: -----------------------------------
+:: main Proposition #3-1 (Internal Circuit Outputs after 4,6-steps)
+
+theorem :: WALLACE1:29 :: ThSTC0S17:      :: for Output S0, S1 and S2
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set
+   for s being State of STC0Circ(x1,x2,x3,x4,x5,x6,x7)
+    for a1,a2,a3,a4,a5,a6,a7 being Element of BOOLEAN st
+        a1 = s.x1 & a2 = s.x2 & a3 = s.x3 & a4 = s.x4 &
+        a5 = s.x5 & a6 = s.x6 & a7 = s.x7
+  holds
+    Following(s,4).STC0OutputS0(x1,x2,x3,x4,x5,x6,x7)
+    = a1'xor'a2'xor'a3'xor'a4'xor'a5'xor'a6'xor'a7 &
+
+    Following(s,6).STC0OutputS1(x1,x2,x3,x4,x5,x6,x7)
+    = ((a1'&'a2)'or'(a2'&'a3)'or'(a3'&'a1))
+      'xor'
+      ((a5'&'a6)'or'(a6'&'a7)'or'(a7'&'a5))
+      'xor'
+      (((a1'xor'a2'xor'a3)'&'(a5'xor'a6'xor'a7))'or'
+       ((a5'xor'a6'xor'a7)'&'a4)'or'(a4'&'(a1'xor'a2'xor'a3))) &
+
+    Following(s,6).STC0OutputS2(x1,x2,x3,x4,x5,x6,x7)
+    = (((a1'&'a2)'or'(a2'&'a3)'or'(a3'&'a1))'&'
+       ((a5'&'a6)'or'(a6'&'a7)'or'(a7'&'a5)))
+      'or'
+      (((a5'&'a6)'or'(a6'&'a7)'or'(a7'&'a5))'&'
+       (((a1'xor'a2'xor'a3)'&'(a5'xor'a6'xor'a7))'or'
+       ((a5'xor'a6'xor'a7)'&'a4)'or'(a4'&'(a1'xor'a2'xor'a3))))
+      'or'
+      ((((a1'xor'a2'xor'a3)'&'(a5'xor'a6'xor'a7))'or'
+       ((a5'xor'a6'xor'a7)'&'a4)'or'(a4'&'(a1'xor'a2'xor'a3)))'&'
+       ((a1'&'a2)'or'(a2'&'a3)'or'(a3'&'a1))) &
+
+    Following(s,6).x1 = a1 & Following(s,6).x2 = a2 &
+    Following(s,6).x3 = a3 & Following(s,6).x4 = a4 &
+    Following(s,6).x5 = a5 & Following(s,6).x6 = a6 &
+    Following(s,6).x7 = a7;
+
+:: --------------------------
+:: main Proposition #3-2 (Stability after 6-steps)
+
+theorem :: WALLACE1:30 :: ThSTC0S18:
+  for x1,x2,x3,x4,x5,x6,x7 being non pair set
+   for s being State of STC0Circ(x1,x2,x3,x4,x5,x6,x7)
+    holds Following(s,6) is stable;
+
+::========================================================================

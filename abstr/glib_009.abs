@@ -1,0 +1,1107 @@
+:: Underlying Simple Graphs
+::  by Sebastian Koch
+::
+:: Received August 29, 2019
+:: Copyright (c) 2019-2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies NUMBERS, FINSEQ_1, SUBSET_1, RELAT_1, FUNCT_1, XXREAL_0, TARSKI,
+      ARYTM_3, CARD_1, XBOOLE_0, NAT_1, ARYTM_1, GLIB_000, ZFMISC_1, RELAT_2,
+      GLIB_002, FUNCOP_1, GLIB_001, ABIAN, GLIB_003, GLIB_009, INT_1, RCOMP_1,
+      EQREL_1, GLIB_006, GLIB_007, FUNCT_4, CHORD, SCMYCIEL, SGRAPH1, GRAPH_1,
+      ORDINAL4, XCMPLX_0, REWRITE1;
+ notations TARSKI, XBOOLE_0, XTUPLE_0, ZFMISC_1, SUBSET_1, SETFAM_1, RELAT_1,
+      FUNCT_1, ORDINAL1, RELSET_1, PARTFUN1, FUNCT_2, BINOP_1, DOMAIN_1,
+      SETWISEO, EQREL_1, FUNCOP_1, FUNCT_4, PARTFUN2, CARD_1, PBOOLE, CARD_3,
+      NUMBERS, XCMPLX_0, XXREAL_0, XREAL_0, NAT_1, INT_1, VALUED_0, NAT_D,
+      FINSEQ_1, BSPACE, FINSEQ_4, ABIAN, GLIB_000, STRUCT_0, ALGSTR_0, GROUP_1,
+      GROUP_2, GROUP_6, GLIB_001, GLIB_002, GLIB_003, CHORD, GLIB_006,
+      GLIB_007, GLIB_008, FUNCT_7;
+ constructors DOMAIN_1, FUNCT_4, XXREAL_0, NAT_1, NAT_D, BINOP_2, CARD_2,
+      FINSEQ_4, PBOOLE, ORDINAL3, WELLORD2, PARTFUN1, RELSET_1, GLIB_000,
+      STRUCT_0, RELAT_1, FUNCT_1, FUNCT_2, ALGSTR_0, GROUP_1, GLIB_001, ABIAN,
+      CARD_3, FINSEQ_1, GLIB_002, GLIB_003, SETFAM_1, EQREL_1, GROUP_2,
+      GROUP_6, GLIB_006, GLIB_007, PARTFUN2, BSPACE, SETWISEO, CHORD, RAT_1,
+      GLIB_008, FUNCT_7;
+ registrations XBOOLE_0, RELAT_1, FUNCT_1, ORDINAL1, FUNCOP_1, FINSET_1,
+      NUMBERS, XREAL_0, NAT_1, MEMBERED, FINSEQ_1, GLIB_000, GLIB_002,
+      GLIB_003, INT_1, VALUED_0, CARD_1, FUNCT_2, PARTFUN1, RELSET_1, XTUPLE_0,
+      CARD_3, GROUP_1, STRUCT_0, GLIB_001, ABIAN, FINSEQ_4, GROUP_2, GLIB_006,
+      EQREL_1, GLIB_007, GLIB_008, CHORD, NECKLACE, FUNCT_7;
+ requirements ARITHM, BOOLE, NUMERALS, REAL, SUBSET;
+
+
+begin :: Preliminaries
+
+:: into XBOOLE_1 ?
+theorem :: GLIB_009:1
+  for X, Y being set st Y c= X holds X \ (X \ Y) = Y;
+
+:: into RELAT_1 ?
+theorem :: GLIB_009:2
+  for R being Relation, X being set holds (R|X)~ = X|`(R~) & (X|`R)~ = (R~)|X;
+
+:: into FUNCT_1 ?
+theorem :: GLIB_009:3
+  for f being Function, Y being set holds dom(Y|`f) = f"Y;
+
+:: into FUNCT_1 ?
+:: reformulation of FUNCT_1:113
+theorem :: GLIB_009:4
+  for f being Function, Y being set holds Y|`f = f|dom(Y|`f);
+
+:: into FUNCT_1 ?
+theorem :: GLIB_009:5
+  for f being one-to-one Function, X being set
+  holds (f|X)" = X|`(f") & (X|`f)" = (f")|X;
+
+:: BEGIN into GLIB_000 ?
+
+theorem :: GLIB_009:6
+  for G being _Graph, e,x1,y1,x2,y2 being object
+  holds e DJoins x1,y1,G & e DJoins x2,y2,G implies x1 = x2 & y1 = y2;
+
+registration
+  let G be _trivial _Graph;
+  cluster the_Vertices_of G -> trivial;
+end;
+
+registration
+  cluster _trivial non-Dmulti -> non-multi for _Graph;
+  let G be _trivial non-Dmulti _Graph;
+  cluster the_Edges_of G -> trivial;
+end;
+
+theorem :: GLIB_009:7
+  for G being _Graph, X,Y being set, e,x,y being object
+  holds e DJoins x,y,G & x in X & y in Y implies e DSJoins X,Y,G;
+
+theorem :: GLIB_009:8
+  for G being _trivial _Graph, H being _Graph
+  st the_Vertices_of H c= the_Vertices_of G & the_Edges_of H c= the_Edges_of G
+  holds H is _trivial & H is Subgraph of G;
+
+theorem :: GLIB_009:9
+  for G being _Graph holds G == G | _GraphSelectors;
+
+theorem :: GLIB_009:10
+  for G being _Graph, X,Y being set, e being object
+  holds e SJoins X,Y,G iff e SJoins Y,X,G;
+
+theorem :: GLIB_009:11
+  for G being _Graph, X,Y being set, e being object
+  holds e SJoins X,Y,G iff (e DSJoins X,Y,G or e DSJoins Y,X,G);
+
+theorem :: GLIB_009:12
+  for G being _Graph, e,v,w being object
+  st e SJoins {v},{w},G holds e Joins v,w,G;
+
+theorem :: GLIB_009:13
+  for G being _Graph, e,v,w being object
+  st e DSJoins {v},{w},G holds e DJoins v,w,G;
+
+theorem :: GLIB_009:14
+  for G being _Graph, v,w being object st v <> w
+  holds G.edgesDBetween({v},{w}) misses G.edgesDBetween({w},{v}) &
+    G.edgesBetween({v},{w})
+      = G.edgesDBetween({v},{w}) \/ G.edgesDBetween({w},{v});
+
+theorem :: GLIB_009:15
+  for G being _Graph, X being set
+  holds G.edgesBetween(X,X) = G.edgesDBetween(X,X);
+
+theorem :: GLIB_009:16
+  for G being _Graph, X,Y being set
+  holds G.edgesBetween(X,Y) = G.edgesBetween(Y,X);
+
+theorem :: GLIB_009:17
+  for G being _Graph holds G is loopless iff
+    for v being object holds not ex e being object st e DJoins v,v,G;
+
+theorem :: GLIB_009:18
+  for G being _Graph holds G is loopless iff
+    for v being object holds not ex e being object st e SJoins {v},{v},G;
+
+theorem :: GLIB_009:19
+  for G being _Graph holds G is loopless iff
+    for v being object holds not ex e being object st e DSJoins {v},{v},G;
+
+theorem :: GLIB_009:20
+  for G being _Graph holds G is loopless iff
+    for v being object holds G.edgesBetween({v},{v}) = {};
+
+theorem :: GLIB_009:21
+  for G being _Graph holds G is loopless iff
+    for v being object holds G.edgesDBetween({v},{v}) = {};
+
+registration
+  let G be loopless _Graph, v be object;
+  cluster G.edgesBetween({v},{v}) -> empty;
+  cluster G.edgesDBetween({v},{v}) -> empty;
+end;
+
+theorem :: GLIB_009:22
+  for G being _Graph holds G is non-multi iff
+    for v,w being object holds G.edgesBetween({v},{w}) is trivial;
+
+registration
+  let G be non-multi _Graph, v, w be object;
+  cluster G.edgesBetween({v},{w}) -> trivial;
+end;
+
+theorem :: GLIB_009:23
+  for G being _Graph holds G is non-Dmulti iff
+    for v,w being object holds G.edgesDBetween({v},{w}) is trivial;
+
+registration
+  let G be non-Dmulti _Graph, v, w be object;
+  cluster G.edgesDBetween({v},{w}) -> trivial;
+end;
+
+registration
+  let G be non _trivial _Graph;
+  cluster spanning -> non _trivial for Subgraph of G;
+end;
+
+registration
+  let G be _Graph;
+  cluster isolated -> non endvertex for Vertex of G;
+end;
+
+:: END into GLIB_000 ?
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:24
+  for G being _Graph, v being Vertex of G
+  holds G.walkOf(v).edgeSeq() = <*>the_Edges_of G;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:25
+  for G being _Graph, v being Vertex of G
+  holds G.walkOf(v).edges() = {};
+
+:: into GLIB_001
+registration
+  let G be _Graph, W be trivial Walk of G;
+  cluster W.edges() -> empty trivial;
+end;
+
+:: into GLIB_001 ?
+registration
+  let G be _Graph, W be Walk of G;
+  cluster W.vertices() -> non empty;
+end;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:26
+  for G1, G2 being _Graph, W1 being Walk of G1, W2 being Walk of G2
+  st W1.vertexSeq() = W2.vertexSeq() & W1.edgeSeq() = W2.edgeSeq()
+  holds W1 = W2;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:27
+  for G being _Graph, p being FinSequence of the_Vertices_of G,
+    q being FinSequence of the_Edges_of G
+  st len p = 1 + len q & for n being Element of NAT
+    st 1 <= n & n+1 <= len p holds q.n Joins p.n, p.(n+1), G
+  holds ex W being Walk of G st W.vertexSeq() = p & W.edgeSeq() = q;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:28
+  for G being _Graph, W being Walk of G holds len W.vertexSeq() = W.length()+1;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:29
+  for G1, G2 being _Graph, W1 being Walk of G1, W2 being Walk of G2
+  for n being odd Nat st W1.vertexSeq() = W2.vertexSeq() holds W1.n = W2.n;
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:30
+  for G1, G2 being _Graph, W1 being Walk of G1, W2 being Walk of G2
+  st W1.vertexSeq() = W2.vertexSeq() holds
+    len W1 = len W2 & W1.length() = W2.length() &
+    W1.first() = W2.first() & W1.last() = W2.last() &
+    W2 is_Walk_from W1.first(),W1.last();
+
+:: into GLIB_001 ?
+theorem :: GLIB_009:31
+  for G1, G2 being _Graph, W1 being Walk of G1, W2 being Walk of G2
+  st W1.vertexSeq() = W2.vertexSeq() holds
+    (W1 is non trivial implies W2 is non trivial) &
+    (W1 is closed implies W2 is closed);
+
+:: into GLIB_001 ?
+:: in the case len W1 = 5, W1 could be the Path in a dipole visiting both
+:: edges while W2 goes back on the same edge it came from
+theorem :: GLIB_009:32
+  for G1, G2 being _Graph, W1 being Walk of G1, W2 being Walk of G2
+  st W1.vertexSeq() = W2.vertexSeq() & len W1 <> 5 holds
+    (W1 is Path-like implies W2 is Path-like) &
+    (W1 is Cycle-like implies W2 is Cycle-like);
+
+:: into GLIB_001 ?
+scheme :: GLIB_009:sch 1
+  IndWalk {G() -> _Graph, P[Walk of G()]} : for W being Walk of G() holds P[W]
+provided
+   for W being trivial Walk of G() holds P[W] and
+   for W being Walk of G(), e being object st e in W.last().edgesInOut() &
+    P[W] holds P[W.addEdge(e)];
+
+:: into GLIB_001 ?
+scheme :: GLIB_009:sch 2
+  IndDWalk {G() -> _Graph, P[Walk of G()]} :
+    for W being DWalk of G() holds P[W]
+provided
+   for W being trivial DWalk of G() holds P[W] and
+   for W being DWalk of G(), e being object
+    st e in W.last().edgesOut() & P[W] holds P[W.addEdge(e)];
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:33
+  for G1 being _Graph, E being Subset of the_Edges_of G1
+  for G2 being inducedSubgraph of G1, the_Vertices_of G1, E
+  st G2 is connected holds G1 is connected;
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:34
+  for G1 being _Graph, E being set, G2 being removeEdges of G1, E
+  st G2 is connected holds G1 is connected;
+
+:: into GLIB_002 ?
+registration
+  let G1 be non connected _Graph, E be set;
+  cluster -> non connected for removeEdges of G1, E;
+end;
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:35
+  for G1 being _Graph, G2 being Subgraph of G1
+  st (for W1 being Walk of G1 ex W2 being Walk of G2
+    st W2 is_Walk_from W1.first(),W1.last())
+  holds
+    for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+    holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:36
+  for G1 being _Graph, G2 being Subgraph of G1
+  st (for W1 being Walk of G1 ex W2 being Walk of G2
+    st W2 is_Walk_from W1.first(),W1.last())
+  holds G1 is connected implies G2 is connected;
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:37
+  for G1 being _Graph, G2 being spanning Subgraph of G1
+  st (for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+    holds G1.reachableFrom(v1) = G2.reachableFrom(v2))
+  holds G1.componentSet() = G2.componentSet();
+
+:: into GLIB_002 ?
+theorem :: GLIB_009:38
+  for G1 being _Graph, G2 being spanning Subgraph of G1
+  st (for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+    holds G1.reachableFrom(v1) = G2.reachableFrom(v2))
+  holds G1.numComponents() = G2.numComponents();
+
+:: into CHORD ?
+theorem :: GLIB_009:39
+  for G being _Graph holds G is loopless iff
+    for v being Vertex of G holds not v,v are_adjacent;
+
+registration
+  let G be non complete _Graph;
+  cluster spanning -> non complete for Subgraph of G;
+end;
+
+:: into GLIB_006 ?
+theorem :: GLIB_009:40
+  for G2, G3 being _Graph, G1 being Supergraph of G3
+  st G1 == G2 holds G2 is Supergraph of G3;
+
+theorem :: GLIB_009:41
+  for G2 being _Graph, V being set, G1 being addVertices of G2, V
+  for x,y being set, e being object holds
+    (e Joins x,y,G1 iff e Joins x,y,G2) &
+    (e DJoins x,y,G1 iff e DJoins x,y,G2) &
+    (e SJoins x,y,G1 iff e SJoins x,y,G2) &
+    (e DSJoins x,y,G1 iff e DSJoins x,y,G2);
+
+:: into GLIB_007 ?
+theorem :: GLIB_009:42
+  for G1, G2 being _Graph st G1 == G2
+  holds G2 is reverseEdgeDirections of G1, {};
+
+:: into GLIB_007 ?
+theorem :: GLIB_009:43
+  for G being _Graph holds G is reverseEdgeDirections of G, {};
+
+begin :: Plain Graphs
+
+definition
+  let G be _Graph;
+  attr G is plain means
+:: GLIB_009:def 1
+
+  dom G = _GraphSelectors;
+end;
+
+registration
+  let G be _Graph;
+  cluster G|(_GraphSelectors) -> plain;
+end;
+
+registration
+  let V be non empty set, E be set, S, T be Function of E, V;
+  cluster createGraph(V,E,S,T) -> plain;
+end;
+
+registration
+  let G be _Graph, X be set;
+  cluster G.set(WeightSelector, X) -> non plain;
+  cluster G.set(ELabelSelector, X) -> non plain;
+  cluster G.set(VLabelSelector, X) -> non plain;
+end;
+
+registration
+  cluster plain for _Graph;
+end;
+
+theorem :: GLIB_009:44
+  for G1, G2 being plain _Graph st G1 == G2 holds G1 = G2;
+
+:: existence clusters for plain graph modes
+
+registration
+  let G be _Graph;
+  cluster plain for Subgraph of G;
+  let V be set;
+  cluster plain for removeVertices of G, V;
+  let E be set;
+  cluster plain for inducedSubgraph of G, V, E;
+end;
+
+registration
+  let G be _Graph, E be set;
+  cluster plain for removeEdges of G, E;
+  cluster plain for reverseEdgeDirections of G, E;
+end;
+
+registration
+  let G be _Graph, v be set;
+  cluster plain for removeVertex of G, v;
+end;
+
+registration
+  let G be _Graph, e be set;
+  cluster plain for removeEdge of G, e;
+end;
+
+registration
+  let G be _Graph;
+  cluster plain for Supergraph of G;
+  let V be set;
+  cluster plain for addVertices of G, V;
+end;
+
+registration
+  let G be _Graph, v, e, w be object;
+  cluster plain for addEdge of G, v, e, w;
+  cluster plain for addAdjVertex of G, v, e, w;
+end;
+
+registration
+  let G be _Graph, v be object, V be set;
+  cluster plain for addAdjVertexFromAll of G, v, V;
+  cluster plain for addAdjVertexToAll of G, v, V;
+  cluster plain for addAdjVertexAll of G, v, V;
+end;
+
+begin :: Graphs with Loops removed
+
+definition
+  let G be _Graph;
+  func G.loops() -> Subset of the_Edges_of G means
+:: GLIB_009:def 2
+
+  for e being object holds e in it iff ex v being object st e Joins v,v,G;
+end;
+
+theorem :: GLIB_009:45
+  for G being _Graph, e being object
+  holds e in G.loops() iff ex v being object st e DJoins v,v,G;
+
+theorem :: GLIB_009:46
+  for G being _Graph, e,v,w being object st e Joins v,w,G & v <> w
+  holds not e in G.loops();
+
+theorem :: GLIB_009:47
+  for G being _Graph holds G is loopless iff G.loops() = {};
+
+registration
+  let G be loopless _Graph;
+  cluster G.loops() -> empty;
+end;
+
+registration
+  let G be non loopless _Graph;
+  cluster G.loops() -> non empty;
+end;
+
+theorem :: GLIB_009:48
+  for G1 being _Graph, G2 being Subgraph of G1 holds G2.loops() c= G1.loops();
+
+theorem :: GLIB_009:49
+  for G2 being _Graph, G1 being Supergraph of G2 holds G2.loops() c= G1.loops()
+;
+
+theorem :: GLIB_009:50
+  for G1, G2 being _Graph st G1 == G2 holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:51
+  for G1 being _Graph, E being set, G2 being reverseEdgeDirections of G1, E
+  holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:52
+  for G2 being _Graph, V being set, G1 being addVertices of G2, V
+  holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:53
+  for G2 being _Graph, v1,e,v2 being object, G1 being addEdge of G2,v1,e,v2
+  st v1 <> v2 holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:54
+  for G2 being _Graph, v being Vertex of G2, e being object
+  for G1 being addEdge of G2,v,e,v st not e in the_Edges_of G2
+  holds G1.loops() = G2.loops() \/ {e};
+
+theorem :: GLIB_009:55
+  for G2 being _Graph, v1,e,v2 being object
+  for G1 being addAdjVertex of G2,v1,e,v2 holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:56
+  for G2 being _Graph, v being object, V being set
+  for G1 being addAdjVertexAll of G2,v,V holds G1.loops() = G2.loops();
+
+theorem :: GLIB_009:57
+  for G being _Graph, P being Path of G holds P.edges() misses G.loops() or
+    ex v,e being object st e Joins v,v,G & P = G.walkOf(v,e,v);
+
+definition
+  let G be _Graph;
+  mode removeLoops of G is removeEdges of G, G.loops();
+end;
+
+theorem :: GLIB_009:58
+  for G1 being loopless _Graph, G2 being _Graph
+  holds G1 == G2 iff G2 is removeLoops of G1;
+
+theorem :: GLIB_009:59
+  for G1, G2 being _Graph, G3 being removeLoops of G1
+  holds G2 == G3 iff G2 is removeLoops of G1;
+
+theorem :: GLIB_009:60
+  for G1, G2 being _Graph, G3 being removeLoops of G1
+  st G1 == G2 holds G3 is removeLoops of G2;
+
+registration
+  let G be _Graph;
+  cluster -> loopless for removeLoops of G;
+  cluster plain for removeLoops of G;
+end;
+
+registration
+  let G be non-multi _Graph;
+  cluster -> simple for removeLoops of G;
+end;
+
+registration
+  let G be non-Dmulti _Graph;
+  cluster -> Dsimple for removeLoops of G;
+end;
+
+registration
+  let G be complete _Graph;
+  cluster -> complete for removeLoops of G;
+end;
+
+theorem :: GLIB_009:61
+  for G1 being _Graph, G2 being removeLoops of G1, W1 being Walk of G1
+  ex W2 being Walk of G2 st W2 is_Walk_from W1.first(),W1.last();
+
+theorem :: GLIB_009:62
+  for G1 being _Graph, G2 being removeLoops of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+  holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+registration
+  let G be connected _Graph;
+  cluster -> connected for removeLoops of G;
+end;
+
+registration
+  let G be non connected _Graph;
+  cluster -> non connected for removeLoops of G;
+end;
+
+theorem :: GLIB_009:63
+  for G1 being _Graph, G2 being removeLoops of G1
+  holds G1.componentSet() = G2.componentSet();
+
+theorem :: GLIB_009:64
+  for G1 being _Graph, G2 being removeLoops of G1
+  holds G1.numComponents() = G2.numComponents();
+
+theorem :: GLIB_009:65
+  for G1 being _Graph, G2 being removeLoops of G1
+  holds G1 is chordal iff G2 is chordal;
+
+:: non chordal cluster after non chordal has been clustered with cycles
+registration
+  let G be chordal _Graph;
+  cluster -> chordal for removeLoops of G;
+end;
+
+:: More theorems of this kind can be produced with other
+:: subgraph modes. This particular example was needed
+:: to show that the cut-vertex property prevails in graphs
+:: with removed loops
+theorem :: GLIB_009:66
+  for G1 being _Graph, v being set, G2 being removeLoops of G1
+  for G3 being removeVertex of G1, v, G4 being removeVertex of G2, v
+  holds G4 is removeLoops of G3;
+
+theorem :: GLIB_009:67
+  for G1 being _Graph, G2 being removeLoops of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is cut-vertex iff v2 is cut-vertex;
+
+theorem :: GLIB_009:68
+  for G1 being _Graph, G2 being removeLoops of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 & v1 is endvertex holds v2 is endvertex;
+
+begin :: Graphs with parallel Edges removed
+
+definition
+  let G be _Graph;
+  func EdgeAdjEqRel(G) -> Equivalence_Relation of the_Edges_of G means
+:: GLIB_009:def 3
+
+  for e1, e2 being object holds [e1,e2] in it iff
+    ex v1, v2 being object st e1 Joins v1,v2,G & e2 Joins v1,v2,G;
+  func DEdgeAdjEqRel(G) -> Equivalence_Relation of the_Edges_of G means
+:: GLIB_009:def 4
+
+  for e1, e2 being object holds [e1,e2] in it iff
+    ex v1, v2 being object st e1 DJoins v1,v2,G & e2 DJoins v1,v2,G;
+end;
+
+theorem :: GLIB_009:69
+  for G being _Graph holds DEdgeAdjEqRel(G) c= EdgeAdjEqRel(G);
+
+theorem :: GLIB_009:70
+  for G being _Graph
+  holds G is non-multi iff EdgeAdjEqRel(G) = id the_Edges_of G;
+
+theorem :: GLIB_009:71
+  for G being _Graph
+  holds G is non-Dmulti iff DEdgeAdjEqRel(G) = id the_Edges_of G;
+
+registration
+  let G be edgeless _Graph;
+  cluster EdgeAdjEqRel(G) -> empty;
+  cluster DEdgeAdjEqRel(G) -> empty;
+end;
+
+registration
+  let G be non edgeless _Graph;
+  cluster EdgeAdjEqRel(G) -> non empty;
+  cluster DEdgeAdjEqRel(G) -> non empty;
+end;
+
+definition
+  let G be _Graph; :: Rep is short for Representative
+  mode RepEdgeSelection of G -> Subset of the_Edges_of G means
+:: GLIB_009:def 5
+
+  for v,w,e0 being object st e0 Joins v,w,G
+  ex e being object st e Joins v,w,G & e in it &
+    for e9 being object st e9 Joins v,w,G & e9 in it holds e9 = e;
+  mode RepDEdgeSelection of G -> Subset of the_Edges_of G means
+:: GLIB_009:def 6
+
+  for v,w,e0 being object st e0 DJoins v,w,G
+  ex e being object st e DJoins v,w,G & e in it &
+    for e9 being object st e9 DJoins v,w,G & e9 in it holds e9 = e;
+end;
+
+registration
+  let G be edgeless _Graph;
+  cluster -> empty for RepEdgeSelection of G;
+  cluster -> empty for RepDEdgeSelection of G;
+end;
+
+registration
+  let G be non edgeless _Graph;
+  cluster -> non empty for RepEdgeSelection of G;
+  cluster -> non empty for RepDEdgeSelection of G;
+end;
+
+theorem :: GLIB_009:72
+  for G being _Graph, E1 being RepDEdgeSelection of G
+  ex E2 being RepEdgeSelection of G st E2 c= E1;
+
+theorem :: GLIB_009:73
+  for G being _Graph, E2 being RepEdgeSelection of G
+  ex E1 being RepDEdgeSelection of G st E2 c= E1;
+
+theorem :: GLIB_009:74
+  for G being non-multi _Graph, E being RepEdgeSelection of G
+  holds E = the_Edges_of G;
+
+theorem :: GLIB_009:75
+  for G being _Graph st ex E being RepEdgeSelection of G st E = the_Edges_of G
+  holds G is non-multi;
+
+theorem :: GLIB_009:76
+  for G being non-Dmulti _Graph, E being RepDEdgeSelection of G
+  holds E = the_Edges_of G;
+
+theorem :: GLIB_009:77
+  for G being _Graph st ex E being RepDEdgeSelection of G st E = the_Edges_of G
+  holds G is non-Dmulti;
+
+theorem :: GLIB_009:78
+  for G1 being _Graph, G2 being Subgraph of G1, E being RepEdgeSelection of G1
+  st E c= the_Edges_of G2 holds E is RepEdgeSelection of G2;
+
+theorem :: GLIB_009:79
+  for G1 being _Graph, G2 being Subgraph of G1, E being RepDEdgeSelection of G1
+  st E c= the_Edges_of G2 holds E is RepDEdgeSelection of G2;
+
+theorem :: GLIB_009:80
+  for G1 being _Graph, G2 being Subgraph of G1,E2 being RepEdgeSelection of G2
+  ex E1 being RepEdgeSelection of G1 st E2 = E1 /\ the_Edges_of G2;
+
+theorem :: GLIB_009:81
+  for G1 being _Graph, G2 being Subgraph of G1,E2 being RepDEdgeSelection of G2
+  ex E1 being RepDEdgeSelection of G1 st E2 = E1 /\ the_Edges_of G2;
+
+theorem :: GLIB_009:82
+  for G1 being _Graph, E1 being RepEdgeSelection of G1
+  for G2 being inducedSubgraph of G1, the_Vertices_of G1, E1
+  for E2 being RepEdgeSelection of G2 holds E1 = E2;
+
+theorem :: GLIB_009:83
+  for G1 being _Graph, E1 being RepDEdgeSelection of G1
+  for G2 being inducedSubgraph of G1, the_Vertices_of G1, E1
+  for E2 being RepDEdgeSelection of G2 holds E1 = E2;
+
+theorem :: GLIB_009:84
+  for G1 being _Graph, E1 being RepDEdgeSelection of G1
+  for G2 being inducedSubgraph of G1, the_Vertices_of G1, E1
+  for E2 being RepEdgeSelection of G2
+  holds E2 c= E1 & E2 is RepEdgeSelection of G1;
+
+theorem :: GLIB_009:85
+  for G being _Graph, E1, E2 being RepEdgeSelection of G
+  ex f being one-to-one Function st dom f = E1 & rng f = E2 &
+    for e,v,w being object st e in E1 holds e Joins v,w,G iff f.e Joins v,w,G;
+
+theorem :: GLIB_009:86
+  for G being _Graph, E1, E2 being RepEdgeSelection of G
+  holds card E1 = card E2;
+
+theorem :: GLIB_009:87
+  for G being _Graph, E1, E2 being RepDEdgeSelection of G
+  ex f being one-to-one Function st dom f = E1 & rng f = E2 &
+    for e,v,w being object st e in E1 holds e DJoins v,w,G iff f.e DJoins v,w,G
+;
+
+theorem :: GLIB_009:88
+  for G being _Graph, E1, E2 being RepDEdgeSelection of G
+  holds card E1 = card E2;
+
+definition
+  let G be _Graph;
+  mode removeParallelEdges of G -> Subgraph of G means
+:: GLIB_009:def 7
+
+  ex E being RepEdgeSelection of G
+  st it is inducedSubgraph of G, the_Vertices_of G, E;
+  mode removeDParallelEdges of G -> Subgraph of G means
+:: GLIB_009:def 8
+
+  ex E being RepDEdgeSelection of G
+  st it is inducedSubgraph of G, the_Vertices_of G, E;
+end;
+
+registration
+  let G be _Graph;
+  cluster -> spanning non-multi for removeParallelEdges of G;
+  cluster -> spanning non-Dmulti for removeDParallelEdges of G;
+  cluster plain for removeParallelEdges of G;
+  cluster plain for removeDParallelEdges of G;
+end;
+
+registration
+  let G be loopless _Graph;
+  cluster -> simple for removeParallelEdges of G;
+  cluster -> Dsimple for removeDParallelEdges of G;
+end;
+
+theorem :: GLIB_009:89
+  for G1 being non-multi _Graph, G2 being _Graph
+  holds G1 == G2 iff G2 is removeParallelEdges of G1;
+
+theorem :: GLIB_009:90
+  for G1 being non-Dmulti _Graph, G2 being _Graph
+  holds G1 == G2 iff G2 is removeDParallelEdges of G1;
+
+theorem :: GLIB_009:91
+  for G1, G2 being _Graph, G3 being removeParallelEdges of G1
+  st G1 == G2 holds G3 is removeParallelEdges of G2;
+
+theorem :: GLIB_009:92
+  for G1, G2 being _Graph, G3 being removeDParallelEdges of G1
+  st G1 == G2 holds G3 is removeDParallelEdges of G2;
+
+theorem :: GLIB_009:93
+  for G1, G2 being _Graph, G3 being removeParallelEdges of G1
+  st G2 == G3 holds G2 is removeParallelEdges of G1;
+
+theorem :: GLIB_009:94
+  for G1, G2 being _Graph, G3 being removeDParallelEdges of G1
+  st G2 == G3 holds G2 is removeDParallelEdges of G1;
+
+theorem :: GLIB_009:95
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for G3 being removeParallelEdges of G2
+  holds G3 is removeParallelEdges of G1;
+
+theorem :: GLIB_009:96
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  ex G3 being removeParallelEdges of G1
+  st G3 is removeParallelEdges of G2;
+
+theorem :: GLIB_009:97
+  for G1 being _Graph, G3 being removeParallelEdges of G1
+  ex G2 being removeDParallelEdges of G1
+  st G3 is removeParallelEdges of G2;
+
+registration
+  let G be complete _Graph;
+  cluster -> complete for removeParallelEdges of G;
+  cluster -> complete for removeDParallelEdges of G;
+end;
+
+theorem :: GLIB_009:98
+  for G1 being _Graph, G2 being removeParallelEdges of G1, W1 being Walk of G1
+  ex W2 being Walk of G2 st W1.vertexSeq() = W2.vertexSeq();
+
+theorem :: GLIB_009:99
+  for G1 being _Graph, G2 being removeDParallelEdges of G1, W1 being Walk of G1
+  ex W2 being Walk of G2 st W1.vertexSeq() = W2.vertexSeq();
+
+theorem :: GLIB_009:100
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+  holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+theorem :: GLIB_009:101
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+  holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+registration
+  let G be connected _Graph;
+  cluster -> connected for removeParallelEdges of G;
+  cluster -> connected for removeDParallelEdges of G;
+end;
+
+registration
+  let G be non connected _Graph;
+  cluster -> non connected for removeParallelEdges of G;
+  cluster -> non connected for removeDParallelEdges of G;
+end;
+
+theorem :: GLIB_009:102
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  holds G1.componentSet() = G2.componentSet();
+
+theorem :: GLIB_009:103
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  holds G1.componentSet() = G2.componentSet();
+
+theorem :: GLIB_009:104
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  holds G1.numComponents() = G2.numComponents();
+
+theorem :: GLIB_009:105
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  holds G1.numComponents() = G2.numComponents();
+
+theorem :: GLIB_009:106
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  holds G1 is chordal iff G2 is chordal;
+
+theorem :: GLIB_009:107
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  holds G1 is chordal iff G2 is chordal;
+
+:: non chordal cluster after non chordal has been clustered with cycles
+registration
+  let G be chordal _Graph;
+  cluster -> chordal for removeParallelEdges of G;
+  cluster -> chordal for removeDParallelEdges of G;
+end;
+
+:: for cut-vertex property, same as with removeLoops above
+theorem :: GLIB_009:108
+  for G1 being _Graph, v being set, G2 being removeParallelEdges of G1
+  for G3 being removeVertex of G1, v, G4 being removeVertex of G2, v
+  holds G4 is removeParallelEdges of G3;
+
+theorem :: GLIB_009:109
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is cut-vertex iff v2 is cut-vertex;
+
+theorem :: GLIB_009:110
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is cut-vertex iff v2 is cut-vertex;
+
+theorem :: GLIB_009:111
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is isolated iff v2 is isolated;
+
+theorem :: GLIB_009:112
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is isolated iff v2 is isolated;
+
+theorem :: GLIB_009:113
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 & v1 is endvertex holds v2 is endvertex;
+
+theorem :: GLIB_009:114
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 & v1 is endvertex holds v2 is endvertex;
+
+:: Graphs with Loops and parallel Edges removed
+
+definition
+  let G be _Graph;
+  mode SimpleGraph of G -> Subgraph of G means
+:: GLIB_009:def 9
+
+  ex E being RepEdgeSelection of G st
+  it is inducedSubgraph of G, the_Vertices_of G, E \ G.loops();
+  mode DSimpleGraph of G -> Subgraph of G means
+:: GLIB_009:def 10
+
+  ex E being RepDEdgeSelection of G st
+  it is inducedSubgraph of G, the_Vertices_of G, E \ G.loops();
+end;
+
+theorem :: GLIB_009:115
+  for G1 being _Graph, G2 being removeParallelEdges of G1
+  for G3 being removeLoops of G2 holds G3 is SimpleGraph of G1;
+
+theorem :: GLIB_009:116
+  for G1 being _Graph, G2 being removeDParallelEdges of G1
+  for G3 being removeLoops of G2 holds G3 is DSimpleGraph of G1;
+
+theorem :: GLIB_009:117
+  for G1 being _Graph, G2 being removeLoops of G1
+  for G3 being removeParallelEdges of G2 holds G3 is SimpleGraph of G1;
+
+theorem :: GLIB_009:118
+  for G1 being _Graph, G2 being removeLoops of G1
+  for G3 being removeDParallelEdges of G2 holds G3 is DSimpleGraph of G1;
+
+theorem :: GLIB_009:119
+  for G1 being _Graph, G3 being SimpleGraph of G1
+  ex G2 being removeParallelEdges of G1 st G3 is removeLoops of G2;
+
+theorem :: GLIB_009:120
+  for G1 being _Graph, G3 being DSimpleGraph of G1
+  ex G2 being removeDParallelEdges of G1 st G3 is removeLoops of G2;
+
+theorem :: GLIB_009:121
+  for G1 being _Graph, G2 being removeLoops of G1, G3 being SimpleGraph of G1
+  holds G3 is removeParallelEdges of G2;
+
+theorem :: GLIB_009:122
+  for G1 being _Graph, G2 being removeLoops of G1, G3 being DSimpleGraph of G1
+  holds G3 is removeDParallelEdges of G2;
+
+theorem :: GLIB_009:123
+  for G1 being loopless _Graph, G2 being _Graph
+  holds G2 is SimpleGraph of G1 iff G2 is removeParallelEdges of G1;
+
+theorem :: GLIB_009:124
+  for G1 being loopless _Graph, G2 being _Graph
+  holds G2 is DSimpleGraph of G1 iff G2 is removeDParallelEdges of G1;
+
+theorem :: GLIB_009:125
+  for G1 being non-multi _Graph, G2 being _Graph
+  holds G2 is SimpleGraph of G1 iff G2 is removeLoops of G1;
+
+theorem :: GLIB_009:126
+  for G1 being non-Dmulti _Graph, G2 being _Graph
+  holds G2 is DSimpleGraph of G1 iff G2 is removeLoops of G1;
+
+registration
+  let G be _Graph;
+  cluster -> spanning loopless non-multi simple for SimpleGraph of G;
+  cluster -> spanning loopless non-Dmulti Dsimple for DSimpleGraph of G;
+  cluster plain for SimpleGraph of G;
+  cluster plain for DSimpleGraph of G;
+end;
+
+theorem :: GLIB_009:127
+  for G1 being simple _Graph, G2 being _Graph
+  holds G1 == G2 iff G2 is SimpleGraph of G1;
+
+theorem :: GLIB_009:128
+  for G1 being Dsimple _Graph, G2 being _Graph
+  holds G1 == G2 iff G2 is DSimpleGraph of G1;
+
+theorem :: GLIB_009:129
+  for G1, G2 being _Graph, G3 being SimpleGraph of G1
+  st G1 == G2 holds G3 is SimpleGraph of G2;
+
+theorem :: GLIB_009:130
+  for G1, G2 being _Graph, G3 being DSimpleGraph of G1
+  st G1 == G2 holds G3 is DSimpleGraph of G2;
+
+theorem :: GLIB_009:131
+  for G1, G2 being _Graph, G3 being SimpleGraph of G1
+  st G2 == G3 holds G2 is SimpleGraph of G1;
+
+theorem :: GLIB_009:132
+  for G1, G2 being _Graph, G3 being DSimpleGraph of G1
+  st G2 == G3 holds G2 is DSimpleGraph of G1;
+
+theorem :: GLIB_009:133
+  for G1 being _Graph, G2 being DSimpleGraph of G1, G3 being SimpleGraph of G2
+  holds G3 is SimpleGraph of G1;
+
+theorem :: GLIB_009:134
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  ex G3 being SimpleGraph of G1 st G3 is SimpleGraph of G2;
+
+theorem :: GLIB_009:135
+  for G1 being _Graph, G3 being SimpleGraph of G1
+  ex G2 being DSimpleGraph of G1 st G3 is SimpleGraph of G2;
+
+registration
+  let G be complete _Graph;
+  cluster -> complete for SimpleGraph of G;
+  cluster -> complete for DSimpleGraph of G;
+end;
+
+theorem :: GLIB_009:136
+  for G1 being _Graph, G2 being SimpleGraph of G1, W1 being Walk of G1
+  ex W2 being Walk of G2 st W2 is_Walk_from W1.first(),W1.last();
+
+theorem :: GLIB_009:137
+  for G1 being _Graph, G2 being DSimpleGraph of G1, W1 being Walk of G1
+  ex W2 being Walk of G2 st W2 is_Walk_from W1.first(),W1.last();
+
+theorem :: GLIB_009:138
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+  holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+theorem :: GLIB_009:139
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2 st v1 = v2
+  holds G1.reachableFrom(v1) = G2.reachableFrom(v2);
+
+registration
+  let G be connected _Graph;
+  cluster -> connected for SimpleGraph of G;
+  cluster -> connected for DSimpleGraph of G;
+end;
+
+registration
+  let G be non connected _Graph;
+  cluster -> non connected for SimpleGraph of G;
+  cluster -> non connected for DSimpleGraph of G;
+end;
+
+theorem :: GLIB_009:140
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  holds G1.componentSet() = G2.componentSet();
+
+theorem :: GLIB_009:141
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  holds G1.componentSet() = G2.componentSet();
+
+theorem :: GLIB_009:142
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  holds G1.numComponents() = G2.numComponents();
+
+theorem :: GLIB_009:143
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  holds G1.numComponents() = G2.numComponents();
+
+theorem :: GLIB_009:144
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  holds G1 is chordal iff G2 is chordal;
+
+theorem :: GLIB_009:145
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  holds G1 is chordal iff G2 is chordal;
+
+:: non chordal cluster after non chordal has been clustered with cycles
+registration
+  let G be chordal _Graph;
+  cluster -> chordal for SimpleGraph of G;
+  cluster -> chordal for DSimpleGraph of G;
+end;
+
+theorem :: GLIB_009:146
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is cut-vertex iff v2 is cut-vertex;
+
+theorem :: GLIB_009:147
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is cut-vertex iff v2 is cut-vertex;
+
+theorem :: GLIB_009:148
+  for G1 being loopless _Graph, G2 being SimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is isolated iff v2 is isolated;
+
+theorem :: GLIB_009:149
+  for G1 being loopless _Graph, G2 being DSimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 holds v1 is isolated iff v2 is isolated;
+
+theorem :: GLIB_009:150
+  for G1 being _Graph, G2 being SimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 & v1 is endvertex holds v2 is endvertex;
+
+theorem :: GLIB_009:151
+  for G1 being _Graph, G2 being DSimpleGraph of G1
+  for v1 being Vertex of G1, v2 being Vertex of G2
+  st v1 = v2 & v1 is endvertex holds v2 is endvertex;

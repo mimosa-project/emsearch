@@ -1,0 +1,164 @@
+:: Dynamic Programming for the Subset Sum Problem
+::  by Hiroshi Fujiwara , Hokuto Watari and Hiroaki Yamamoto
+:: 
+:: Received January 13, 2020
+:: Copyright (c) 2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies PRSUBSET, NUMBERS, NAT_1, FINSEQ_1, CARD_1, RELAT_1, SUBSET_1,
+      XBOOLE_0, FUNCT_1, TARSKI, ORDINAL4, ARYTM_1, ARYTM_3, REAL_1, ZFMISC_1,
+      XXREAL_0, CARD_3, XBOOLEAN, MARGREL1, VALUED_0, FUNCOP_1;
+ notations TARSKI, XBOOLE_0, ZFMISC_1, SUBSET_1, RELAT_1, FUNCT_1, ORDINAL1,
+      RELSET_1, FUNCT_2, BINOP_1, NUMBERS, XCMPLX_0, XXREAL_0, XREAL_0,
+      FUNCOP_1, VALUED_0, FINSEQ_1, FINSEQOP, XBOOLEAN, MARGREL1, RVSUM_1,
+      RVSUM_3;
+ constructors FINSEQOP, RELSET_1, REAL_1, RVSUM_1, MARGREL1, VALUED_0, RVSUM_3;
+ registrations XBOOLE_0, FUNCT_1, ORDINAL1, NUMBERS, XREAL_0, NAT_1, FINSEQ_1,
+      VALUED_0, RELAT_1, CARD_1, XBOOLEAN, MARGREL1, RVSUM_1, RELSET_1;
+ requirements NUMERALS, SUBSET, BOOLE, ARITHM, REAL;
+
+
+begin :: Recurrence Relation of Dynamic Programming for the Subset Sum Problem
+
+definition
+  let x be FinSequence;
+  let I be set;
+  func Seq (x, I) -> FinSequence equals
+:: PRSUBSET:def 1
+  Seq (x | I);
+end;
+
+registration
+  let D be set;
+  let x be D-valued FinSequence;
+  let I be set;
+  cluster Seq (x, I) -> D-valued;
+end;
+
+registration
+  let x be real-valued FinSequence;
+  let I be set;
+  cluster Seq (x, I) -> real-valued;
+end;
+
+registration
+  let D be set;
+  let x be D-valued FinSequence;
+  let i be Nat;
+  cluster x | i -> D-valued for FinSequence-like Function;
+end;
+
+registration
+  let x be real-valued FinSequence;
+  let i be Nat;
+  cluster x | i -> real-valued for FinSequence-like Function;
+end;
+
+definition
+  let x be REAL-valued FinSequence;
+  let a be Real;
+  pred x exist_subset_sum_eq a means
+:: PRSUBSET:def 2
+  ex I being set st I c= dom x & Sum (Seq (x, I)) = a;
+end;
+
+definition
+  let x be REAL-valued FinSequence;
+  func Q_ex(x) -> Function of [:Seg (len x), REAL:], BOOLEAN means
+:: PRSUBSET:def 3
+  for i being Nat, s being Real
+  st 1 <= i <= len x
+  holds
+  (x | i exist_subset_sum_eq s
+  implies it . (i, s) = TRUE)
+  &
+  (not x | i exist_subset_sum_eq s
+  implies it . (i, s) = FALSE);
+end;
+
+registration
+  let A be Subset of NAT;
+  let i be Nat, s be Real;
+  let f be Function of [:A, REAL:], BOOLEAN;
+  cluster f . (i, s) -> boolean;
+end;
+
+definition
+  let a, b be object;
+  func a _eq_ b -> object equals
+:: PRSUBSET:def 4
+  IFEQ(a,b,TRUE,FALSE);
+end;
+
+registration
+  let a, b be object;
+  cluster a _eq_ b -> boolean;
+end;
+
+definition
+  let a, b be ExtReal;
+  func a _le_ b -> object equals
+:: PRSUBSET:def 5
+  IFGT(a,b,FALSE,TRUE);
+end;
+
+registration
+  let a, b be ExtReal;
+  cluster a _le_ b -> boolean;
+end;
+
+theorem :: PRSUBSET:1
+  for s being Real, x being REAL-valued FinSequence
+  st 1 <= len x holds
+  (Q_ex(x)) . (1, s) = ((x . 1) _eq_ s) 'or' (s _eq_ 0);
+
+theorem :: PRSUBSET:2
+  for f,g being Function,
+  X,Y being set
+  st rng g c= X holds (f | (X \/ Y)) * g = (f | X) * g;
+
+theorem :: PRSUBSET:3
+  for x being REAL-valued FinSequence,
+      i being Nat,
+      I0 being set
+  st I0 c= Seg i & Seg (i+1) c= dom x
+  holds
+  Seq (x | (i+1), I0 \/ {i+1}) = Seq (x | i, I0) ^ <* x . (i+1) *>;
+
+theorem :: PRSUBSET:4   ::: should be somewhere
+  for x being real-valued FinSequence
+  st x <> {} & x is positive
+  holds 0 < Sum x;
+
+theorem :: PRSUBSET:5
+  for x being real-valued FinSequence, i being Nat
+  st x is positive & 1 <= i <= len x holds
+  x | i is positive & x | i <> {};
+
+theorem :: PRSUBSET:6
+  for x being real-valued FinSequence,
+  I being set
+  st x is positive & I c= dom x & I <> {}
+  holds
+  Seq (x, I) is positive & Seq (x, I) <> {};
+
+:: Recurrence Relation: Induction Case
+
+theorem :: PRSUBSET:7
+  for x being REAL-valued FinSequence
+  st x is positive holds
+  for i being Nat, s being Real st
+  1 <= i < len x
+  holds
+  ((Q_ex(x)) . (i+1, s)) =
+  ((Q_ex(x)) . (i, s)) 'or'
+  ((x . (i+1) _le_ s) '&' ((Q_ex(x)) . (i, s - x . (i+1))));

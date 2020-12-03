@@ -1,0 +1,428 @@
+:: Formalization of Quasilattices
+::  by Dominik Kulesza and Adam Grabowski
+:: 
+:: Received May 31, 2020
+:: Copyright (c) 2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies LATQUASI, EQREL_1, LATTICES, STRUCT_0, PBOOLE, CARD_1, FUNCOP_1,
+      FUNCT_1, XXREAL_0, MEMBERED, XREAL_0, ZFMISC_1, SHEFFER1, XBOOLE_0,
+      SUBSET_1, ROBBINS1, BINOP_1, FUNCT_7;
+ notations TARSKI, ENUMSET1, XXREAL_0, SUBSET_1, ORDINAL1, CARD_1, XBOOLE_0,
+      STRUCT_0, MEMBERED, LATTICES, BINOP_1, FUNCOP_1, FUNCT_2, XREAL_0,
+      ROBBINS1, SHEFFER1;
+ constructors BINOP_1, ENUMSET1, LATTICES, STRUCT_0, ROBBINS1, CARD_1,
+      FUNCOP_1, ORDINAL1, SUBSET_1, XXREAL_0, XBOOLE_0, XREAL_0, MEMBERED,
+      FUNCT_1, ZFMISC_1, FUNCT_2, RELSET_1, SHEFFER1;
+ registrations RELSET_1, STRUCT_0, LATTICES, LATTICE2, XXREAL_0, XREAL_0,
+      ORDINAL1, MEMBERED, SUBSET_1, LATTAD_1, ROBBINS1, SHEFFER1;
+ requirements SUBSET, NUMERALS, BOOLE, REAL;
+
+
+begin :: Preliminaries
+
+reserve L for non empty LattStr;
+reserve v3,v101,v100,v102,v103,v2,v1,v0 for Element of L;
+
+definition let L be non empty LattStr;
+  attr L is satisfying_QLT1 means
+:: LATQUASI:def 1
+    for v0,v2,v1 being Element of L holds
+      (v0"/\"(v1"\/"v2)) "\/" (v0"/\"v1) = v0 "/\" (v1"\/"v2);
+  attr L is satisfying_QLT2 means
+:: LATQUASI:def 2
+    for v0,v2,v1 being Element of L holds
+      (v0"\/"(v1"/\"v2)) "/\" (v0"\/"v1) = v0 "\/" (v1"/\"v2);
+  attr L is QLT-distributive means
+:: LATQUASI:def 3
+    for v1,v2,v0 being Element of L holds
+      v0 "/\" (v1"\/"(v0"/\"v2)) = v0 "/\" (v1"\/"v2);
+end;
+
+registration
+  cluster trivial -> satisfying_QLT1 satisfying_QLT2
+     QLT-distributive for non empty LattStr;
+end;
+
+registration
+  cluster trivial -> join-idempotent meet-idempotent
+        for non empty LattStr;
+end;
+
+registration
+  cluster join-commutative join-associative join-idempotent
+          meet-commutative meet-associative meet-idempotent
+          satisfying_QLT1 satisfying_QLT2 for non empty LattStr;
+end;
+
+definition let L be join-commutative non empty LattStr;
+  redefine attr L is satisfying_QLT1 means
+:: LATQUASI:def 4
+    for v0,v1,v2 being Element of L holds
+      v0 "/\" v1 [= v0 "/\" (v1 "\/" v2);
+end;
+
+registration
+  cluster {0,1,2} -> real-membered;
+end;
+
+registration
+  cluster -> real for Element of {0,1,2};
+end;
+
+definition let x,y be Element of {0,1,2};
+  func OpEx2 (x,y) -> Element of {0,1,2} equals
+:: LATQUASI:def 5
+  1 if x = 1 or y = 1,
+  min (x,y) if x <> 1 & y <> 1;
+end;
+
+definition
+  func QLT_Ex1 -> BinOp of {0,1,2} means
+:: LATQUASI:def 6
+    for x,y being Element of {0,1,2} holds
+      (x = y implies it.(x,y) = x) &
+      (x <> y implies it.(x,y) = 0);
+  func QLT_Ex2 -> BinOp of {0,1,2} means
+:: LATQUASI:def 7
+    for x,y being Element of {0,1,2} holds
+      (x = 1 or y = 1 implies it.(x,y) = 1) &
+      (x <> 1 & y <> 1 implies it.(x,y) = min(x,y));
+end;
+
+theorem :: LATQUASI:1
+  QLT_Ex1 <> QLT_Ex2;
+
+::: Construction of quasi-lattices needed to prove QLT-7
+
+::  x <= y iff x "\/" y = y
+::: if absorption is true, then x <= y iff x "/\" y = x
+
+definition
+  func QLTLattice1 -> strict non empty LattStr equals
+:: LATQUASI:def 8
+    LattStr (# {0,1,2}, QLT_Ex1, QLT_Ex1 #);
+  func QLTLattice2 -> strict non empty LattStr equals
+:: LATQUASI:def 9
+    LattStr (# {0,1,2}, QLT_Ex1, QLT_Ex2 #);
+end;
+
+registration
+  cluster QLT_Ex1 -> commutative associative idempotent;
+end;
+
+registration
+  cluster QLT_Ex2 -> commutative associative idempotent;
+end;
+
+registration
+  cluster QLTLattice1 -> join-commutative join-associative join-idempotent;
+end;
+
+registration
+  cluster QLTLattice1 -> meet-commutative meet-associative meet-idempotent;
+end;
+
+theorem :: LATQUASI:2
+  for v0,v1 being Element of QLTLattice1 st v1 = 0 holds
+    v0 "/\" v1 = v1;
+
+theorem :: LATQUASI:3
+  for v0,v1 being Element of QLTLattice1 st v1 = 0 holds
+    v0 "\/" v1 = v1;
+
+registration
+  cluster QLTLattice1 -> satisfying_QLT1;
+end;
+
+registration
+  cluster QLTLattice1 -> satisfying_QLT2;
+end;
+
+:: Every QLTLattice is QuasiLattice
+
+registration
+  cluster -> real for Element of QLTLattice2;
+end;
+
+registration
+  cluster QLTLattice2 -> join-commutative join-associative join-idempotent;
+end;
+
+registration
+  cluster QLTLattice2 -> meet-commutative meet-associative meet-idempotent;
+end;
+
+registration
+  cluster QLTLattice2 -> satisfying_QLT1;
+end;
+
+registration
+  cluster QLTLattice2 -> satisfying_QLT2;
+end;
+
+registration
+  cluster QLTLattice2 -> non join-absorbing;
+  cluster QLTLattice2 -> non meet-absorbing;
+end;
+
+registration
+  cluster QLTLattice1 -> non join-absorbing;
+  cluster QLTLattice1 -> non meet-absorbing;
+end;
+
+definition
+  mode QuasiLattice is join-commutative join-associative
+          meet-commutative meet-associative
+          join-idempotent meet-idempotent
+          satisfying_QLT1 satisfying_QLT2 non empty LattStr;
+end;
+
+begin :: Properties of QuasiLattices: QLT-1
+
+:: In QLT-1 we don't need two QLT axioms:
+:: for v0 holds v0"/\"v0 = v0 & :: /\-idempotent
+::   (for v2,v1,v0 holds
+::      (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) & :: /\-associative
+
+theorem :: LATQUASI:4  :: QLT-1
+   (for v1,v0 holds v0"/\"v1 = v1"/\"v0) & :: /\-commutative
+   (for v0,v2,v1 holds ::: link law
+      (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+   (for v0 holds v0"\/"v0 = v0) & :: \/-idempotent
+   (for v2,v1,v0 holds
+      (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) & :: \/-associative
+   (for v1,v0 holds v0"\/"v1 = v1"\/"v0) & :: \/-commutative
+   (for v0,v2,v1 holds  :: link law
+      (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+   (for v1,v2,v0 holds :: QLT-distributivity
+       v0"/\"(v1"\/"(v0"/\"v2)) = v0"/\"(v1"\/"v2)) implies
+   for v1,v2,v3 holds :: distributivity
+       (v1"/\"v2)"\/"(v1"/\"v3) = v1"/\"(v2"\/"v3);
+
+theorem :: LATQUASI:5
+  L is meet-commutative satisfying_QLT1 join-idempotent join-associative
+       join-commutative satisfying_QLT2 QLT-distributive implies
+    L is distributive;
+
+registration
+  cluster meet-commutative satisfying_QLT1 join-idempotent
+     join-associative join-commutative satisfying_QLT2 QLT-distributive ->
+        distributive for non empty LattStr;
+end;
+
+begin :: QLT-2
+
+theorem :: LATQUASI:6
+(for v0 holds v0"/\"v0 = v0) &
+(for v2,v1,v0 holds (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v0,v2,v1 holds (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v0,v2,v1 holds v0"/\"(v1"\/"v2) = (v0"/\"v1)"\/"(v0"/\"v2)) implies
+  for v1,v2,v3 holds v1"\/"(v2"/\"v3) = (v1"\/"v2)"/\"(v1"\/"v3);
+
+theorem :: LATQUASI:7
+  L is meet-idempotent meet-associative meet-commutative
+       join-idempotent join-associative satisfying_QLT2 distributive implies
+    L is distributive';
+
+registration
+  cluster meet-idempotent meet-associative meet-commutative
+       join-idempotent join-associative satisfying_QLT2 distributive ->
+    distributive' for non empty LattStr;
+end;
+
+begin :: QLT-3
+
+definition let L;
+  attr L is QLT-selfdistributive means
+:: LATQUASI:def 10
+   for v2,v1,v0 holds
+    (((v0"/\"v1)"\/"v2)"/\"v1) "\/" (v2"/\"v0) =
+      (((v0"\/"v1)"/\"v2)"\/"v1) "/\" (v2"\/"v0);
+end;
+
+theorem :: LATQUASI:8
+(for v0 holds v0"/\"v0 = v0) &
+(for v2,v1,v0 holds (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v2,v1,v0 holds
+ (((v0"/\"v1)"\/"v2)"/\"v1)"\/"(v2"/\"v0) =
+    (((v0"\/"v1)"/\"v2)"\/"v1)"/\"(v2"\/"v0)) implies
+  for v1,v2,v3 holds
+    v1"\/"(v2"/\"v3) = (v1"\/"v2)"/\"(v1"\/"v3);
+
+registration
+  cluster meet-idempotent meet-associative meet-commutative
+       satisfying_QLT1 join-idempotent join-associative join-commutative
+        satisfying_QLT2 QLT-selfdistributive ->
+     distributive' for non empty LattStr;
+end;
+
+begin :: QLT-4: Bowden Inequality
+
+definition let L;
+  attr L is satisfying_Bowden_inequality means
+:: LATQUASI:def 11
+    for x,y,z being Element of L holds
+      (x "\/" y) "/\" z [= x "\/" (y "/\" z);
+end;
+
+definition let L be join-commutative non empty LattStr;
+  redefine attr L is satisfying_Bowden_inequality means
+:: LATQUASI:def 12
+    for v0,v2,v1 being Element of L holds
+      (v0"\/"(v1"/\"v2))"\/"((v0"\/"v1)"/\"v2) = v0"\/"(v1"/\"v2);
+end;
+
+theorem :: LATQUASI:9
+(for v0 holds v0"/\"v0 = v0) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds
+  (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds
+  (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds
+  (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v0,v2,v1 holds
+   (v0"\/"(v1"/\"v2))"\/"((v0"\/"v1)"/\"v2) = v0"\/"(v1"/\"v2)) implies
+for v1,v2,v3 holds v1"\/"(v2"/\"v3) = (v1"\/"v2)"/\"(v1"\/"v3);
+
+registration
+  cluster meet-idempotent meet-associative meet-commutative satisfying_QLT1
+      join-idempotent join-associative join-commutative
+        satisfying_QLT2 satisfying_Bowden_inequality ->
+    distributive' for non empty LattStr;
+end;
+
+begin :: Preliminaries to QLT-5: Modularity for Quasilattices
+
+definition let L;
+  attr L is QLT-selfmodular means
+:: LATQUASI:def 13
+   for v2,v1,v0 holds
+     (v0"/\"v1)"\/"(v2"/\"(v0"\/"v1)) = (v0"\/"v1)"/\"(v2"\/"(v0"/\"v1));
+end;
+
+definition let L be join-idempotent non empty LattStr;
+  let a,b be Element of L;
+  redefine pred a [= b;
+  reflexivity;
+end;
+
+:: Modularity for Quasilattices
+
+theorem :: LATQUASI:10  :: Modularity for QuasiLattices
+(for v0 holds v0"/\"v0 = v0) &
+(for v2,v1,v0 holds (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v0,v1,v2 st v0 "\/" v1 = v1 holds
+ v0"\/"(v2"/\"v1) = (v0"\/"v2)"/\"v1) implies
+for v1,v2,v3 holds (v1"/\"v2)"\/"(v1"/\"v3) = v1"/\"(v2"\/"(v1"/\"v3));
+
+theorem :: LATQUASI:11
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v2,v1,v0 holds (v0"/\"v1)"\/"(v0"/\"v2) = v0"/\"(v1"\/"(v0"/\"v2)))
+implies
+for v1,v2,v3 st v1"\/"v2 = v2 holds v1"\/"(v3"/\"v2) = (v1"\/"v3)"/\"v2;
+
+definition let L be meet-idempotent join-idempotent meet-commutative
+       join-commutative meet-associative join-associative satisfying_QLT1
+    satisfying_QLT2 non empty LattStr;
+  redefine attr L is modular means
+:: LATQUASI:def 14
+  for v1,v2,v3 being Element of L holds
+      (v1"/\"v2)"\/"(v1"/\"v3) = v1"/\"(v2"\/"(v1"/\"v3));
+end;
+
+begin :: QLT-5
+
+theorem :: LATQUASI:12  :: QLT-5
+(for v0 holds v0"/\"v0 = v0) &
+(for v2,v1,v0 holds (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v2,v1,v0 holds
+ (v0"/\"v1)"\/"(v2"/\"(v0"\/"v1)) = (v0"\/"v1)"/\"(v2"\/"(v0"/\"v1))) implies
+  for v1,v2,v3 holds
+    (v1"/\"v2)"\/"(v1"/\"v3) = v1"/\"(v2"\/"(v1"/\"v3));
+
+registration
+  cluster meet-idempotent meet-associative meet-commutative
+       satisfying_QLT1 join-idempotent join-associative join-commutative
+       satisfying_QLT2 QLT-selfmodular -> modular for non empty LattStr;
+end;
+
+begin :: QLT-6
+
+theorem :: LATQUASI:13
+(for v0 holds v0"/\"v0 = v0) &
+(for v2,v1,v0 holds (v0"/\"v1)"/\"v2 = v0"/\"(v1"/\"v2)) &
+(for v1,v0 holds v0"/\"v1 = v1"/\"v0) &
+(for v0,v2,v1 holds
+  (v0"/\"(v1"\/"v2))"\/"(v0"/\"v1) = v0"/\"(v1"\/"v2)) &
+(for v0 holds v0"\/"v0 = v0) &
+(for v2,v1,v0 holds
+  (v0"\/"v1)"\/"v2 = v0"\/"(v1"\/"v2)) &
+(for v1,v0 holds v0"\/"v1 = v1"\/"v0) &
+(for v0,v2,v1 holds
+  (v0"\/"(v1"/\"v2))"/\"(v0"\/"v1) = v0"\/"(v1"/\"v2)) &
+(for v2,v1,v0 holds
+  ((v0"\/"v1)"/\"v2)"\/"v1 = ((v2"\/"v1)"/\"v0)"\/"v1)
+implies
+for v1,v2,v3 holds
+  (v1"/\"v2)"\/"(v1"/\"v3) = v1"/\"(v2"\/"(v1"/\"v3));
+
+definition let L;
+  attr L is QLT-selfmodular' means
+:: LATQUASI:def 15
+    for v2,v1,v0 holds
+      ((v0"\/"v1)"/\"v2)"\/"v1 = ((v2"\/"v1)"/\"v0)"\/"v1;
+end;
+
+registration
+  cluster meet-idempotent meet-associative meet-commutative
+       satisfying_QLT1 join-idempotent join-associative join-commutative
+        satisfying_QLT2 QLT-selfmodular' -> modular for non empty LattStr;
+end;
+
+begin :: The Counterexample Needed to Prove QLT-7
+
+theorem :: LATQUASI:14 :: QLT-7
+  ex L1,L2 being QuasiLattice st
+    the carrier of L1 = the carrier of L2 &
+    the L_join of L1 = the L_join of L2 &
+    the L_meet of L1 <> the L_meet of L2;
+

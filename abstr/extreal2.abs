@@ -1,0 +1,137 @@
+:: Some Properties of Extended Real Numbers Operations: absolute
+:: value, min and max
+::  by Noboru Endou , Katsumi Wasaki and Yasunari Shidama
+::
+:: Received September 15, 2000
+:: Copyright (c) 2000-2012 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies NUMBERS, SUPINF_1, REAL_1, COMPLEX1, CARD_1, XXREAL_0, ARYTM_1,
+      ARYTM_3, RELAT_1, MESFUNC1, MEASURE6;
+ notations NUMBERS, XXREAL_0, COMPLEX1, REAL_1, SUPINF_1, SUPINF_2, MEASURE6,
+      EXTREAL1, MESFUNC1;
+ constructors REAL_1, COMPLEX1, SUPINF_2, MEASURE6, EXTREAL1, MESFUNC1,
+      SUPINF_1, BINOP_2;
+ registrations NUMBERS, XXREAL_0, XREAL_0, MEMBERED, XBOOLE_0, XXREAL_3,
+      EXTREAL1;
+ requirements NUMERALS, REAL, SUBSET, BOOLE, ARITHM;
+
+
+begin :: Preliminaries
+
+reserve x,y,w,z for R_eal,
+  a for Real;
+
+begin :: Basic properties of absolute value for extended real numbers
+
+theorem :: EXTREAL2:1
+  x = a implies |.x.| = abs(a);
+
+theorem :: EXTREAL2:2
+  |.x.| = x or |.x.| = -x;
+
+theorem :: EXTREAL2:3
+  0 <= |.x.|;
+
+theorem :: EXTREAL2:4
+  x <> 0 implies 0 < |.x.|;
+
+theorem :: EXTREAL2:5
+  x = 0 iff |.x.| = 0;
+
+theorem :: EXTREAL2:6
+  |.x.| = -x & x <> 0 implies x < 0;
+
+theorem :: EXTREAL2:7
+  x <= 0 implies |.x.| = -x;
+
+theorem :: EXTREAL2:8
+  |.x * y.| = |.x.| * |.y.|;
+
+theorem :: EXTREAL2:9
+  -|.x.| <= x & x <= |.x.|;
+
+theorem :: EXTREAL2:10
+  |.x.| < y implies -y < x & x < y;
+
+theorem :: EXTREAL2:11
+  -y < x & x < y implies 0 < y & |.x.| < y;
+
+theorem :: EXTREAL2:12
+  -y <= x & x <= y iff |.x.| <= y;
+
+theorem :: EXTREAL2:13
+  |.x + y.| <= |.x.| + |.y.|;
+
+theorem :: EXTREAL2:14
+  -infty < x & x < +infty & x <> 0 implies |.x.|*|. 1./x .| = 1.;
+
+theorem :: EXTREAL2:15
+  x = +infty or x = -infty implies |.x.|*|. 1./x .| = 0;
+
+theorem :: EXTREAL2:16
+  x <> 0 implies |. 1./x .| = 1./|.x.|;
+
+theorem :: EXTREAL2:17
+  not((x=-infty or x=+infty) & (y=-infty or y=+infty)) & y<>0 implies |.
+  x/y.| = |.x.|/|.y.|;
+
+theorem :: EXTREAL2:18
+  |.x.| = |.-x.|;
+
+theorem :: EXTREAL2:19
+  |.+infty.| = +infty & |.-infty.| = +infty;
+
+theorem :: EXTREAL2:20
+  x is Real or y is Real implies |.x.|-|.y.| <= |.x-y.|;
+
+theorem :: EXTREAL2:21
+   |.x-y.| <= |.x.| + |.y.|;
+
+canceled;
+
+theorem :: EXTREAL2:23
+  |.x.| <= z & |.y.| <= w implies |.x+y.| <= z + w;
+
+theorem :: EXTREAL2:24
+  x is Real or y is Real implies |.|.x.|-|.y.|.| <= |.x-y.|;
+
+theorem :: EXTREAL2:25
+  0 <= x * y implies |.x+y.| = |.x.|+|.y.|;
+
+begin
+
+theorem :: EXTREAL2:26
+  x <> +infty & y <> +infty & not ( x = +infty & y = +infty or x =
+  -infty & y = -infty ) implies min(x,y) = (x + y - |.x - y.|) / R_EAL 2;
+
+theorem :: EXTREAL2:27
+  x <> -infty & y <> -infty & not ( x = +infty & y = +infty or x =
+  -infty & y = -infty ) implies max(x,y) = (x + y + |.x - y.|) / R_EAL 2;
+
+definition
+  let x,y be R_eal;
+  redefine func max(x,y) -> R_eal;
+  redefine func min(x,y) -> R_eal;
+end;
+
+theorem :: EXTREAL2:28
+  min(x,y) + max(x,y)= x + y;
+
+begin ::Addenda
+:: missing, 2007.07.20, A.T.
+
+theorem :: EXTREAL2:29
+  |.x.| = +infty implies x = +infty or x = -infty;
+
+theorem :: EXTREAL2:30
+  |.x.| < +infty iff x in REAL;

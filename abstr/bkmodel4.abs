@@ -1,0 +1,653 @@
+:: Beltrami-Klein model, Part {IV}
+::  by Roland Coghetto
+:: 
+:: Received December 30, 2019
+:: Copyright (c) 2019-2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies NAT_1, MATRIX_6, FINSEQ_2, COMPLEX1, REAL_1, XCMPLX_0, ANPROJ_1,
+      PENCIL_1, MCART_1, EUCLID_5, ALGSTR_0, ARYTM_1, ARYTM_3, CARD_1, EUCLID,
+      FUNCT_1, INCSP_1, MATRIX_1, NUMBERS, PRE_TOPC, RELAT_1, STRUCT_0,
+      SUBSET_1, SUPINF_2, VECTSP_1, XBOOLE_0, MESFUNC1, ANPROJ_8, ANPROJ_9,
+      TARSKI, XXREAL_0, PASCAL, SQUARE_1, JGRAPH_6, RVSUM_1, FINSEQ_1,
+      MATRIX_3, BKMODEL1, BKMODEL2, BKMODEL3, RLTOPSP1, GTARSKI1, GTARSKI2,
+      METRIC_1, EUCLID12, CONVEX1, XXREAL_1, ALGSTR_4, BKMODEL4;
+ notations RELSET_1, ORDINAL1, XCMPLX_0, PRE_TOPC, RVSUM_1, TARSKI, XBOOLE_0,
+      RLVECT_1, COLLSP, EUCLID_5, PASCAL, XXREAL_0, ANPROJ_9, SQUARE_1,
+      XREAL_0, JGRAPH_6, SUBSET_1, NUMBERS, FUNCT_1, FUNCT_2, FINSEQ_1,
+      STRUCT_0, ALGSTR_0, VECTSP_1, FINSEQ_2, EUCLID, ANPROJ_1, MATRIX_6,
+      LAPLACE, ANPROJ_8, MATRIX_1, MATRIX_3, BKMODEL1, BKMODEL2, RLTOPSP1,
+      GTARSKI1, METRIC_1, EUCLID12, XXREAL_1, GTARSKI2, BKMODEL3;
+ constructors REALSET1, FINSEQ_4, LAPLACE, MATRPROB, RELSET_1, MONOID_0,
+      EUCLID_5, MATRIX13, ANPROJ_8, PASCAL, SQUARE_1, BINOP_2, GTARSKI2,
+      EUCLID12, CONVEX1, XXREAL_1, BKMODEL3;
+ registrations MEMBERED, ORDINAL1, XXREAL_0, XBOOLE_0, ANPROJ_1, STRUCT_0,
+      VECTSP_1, REVROT_1, RELSET_1, XREAL_0, MONOID_0, EUCLID, VALUED_0,
+      MATRIX_6, SQUARE_1, XCMPLX_0, NUMBERS, TOPREAL9, TOPREALC, GTARSKI2,
+      RLTOPSP1, CONVEX1, BKMODEL3;
+ requirements REAL, SUBSET, NUMERALS, ARITHM, BOOLE;
+
+
+begin :: Preliminaries
+
+theorem :: BKMODEL4:1
+  for a,b being Real st a <> b holds 1 - (a / (a - b)) = - b / (a - b);
+
+theorem :: BKMODEL4:2
+  for a,b being Real st 0 < a * b holds 0 < a / b;
+
+theorem :: BKMODEL4:3
+  for a,b,c being Real st 0 <= a <= 1 & 0 < b * c holds
+  0 <= (a * c) / ((1 - a) * b + a * c) <= 1;
+
+theorem :: BKMODEL4:4
+  for a,b,c being Real st (1 - a) * b + a * c <> 0 holds
+    1 - ((a * c) / ((1 - a) * b + a * c)) =
+      (1 - a) * b / ((1 - a) * b + a * c);
+
+theorem :: BKMODEL4:5
+  for a,b,c,d being Real st b <> 0 holds
+    a * b / c * d / b = a * d / c;
+
+theorem :: BKMODEL4:6
+  for u being Element of TOP-REAL 3 holds u = |[u.1,u.2,u.3]|;
+
+theorem :: BKMODEL4:7
+  for P being Element of BK_model holds BK_to_REAL2 P in TarskiEuclid2Space;
+
+definition
+  let P be POINT of BK-model-Plane;
+  func BK_to_T2 P -> POINT of TarskiEuclid2Space means
+:: BKMODEL4:def 1
+  ex p be Element of BK_model st P = p &
+  it = BK_to_REAL2 p;
+end;
+
+definition
+  let P be POINT of TarskiEuclid2Space;
+  assume
+ Tn2TR P in inside_of_circle(0,0,1);
+  func T2_to_BK P -> POINT of BK-model-Plane means
+:: BKMODEL4:def 2
+
+  ex u be non zero Element of TOP-REAL 3 st
+  it = Dir u & u`3 = 1 & Tn2TR P = |[u`1,u`2]|;
+end;
+
+theorem :: BKMODEL4:8
+  for P being POINT of BK-model-Plane holds
+  Tn2TR BK_to_T2 P in inside_of_circle(0,0,1);
+
+theorem :: BKMODEL4:9
+  for P being POINT of BK-model-Plane holds T2_to_BK BK_to_T2 P = P;
+
+theorem :: BKMODEL4:10
+  for P being POINT of TarskiEuclid2Space st
+  Tn2TR P is Element of inside_of_circle(0,0,1) holds BK_to_T2 T2_to_BK P = P;
+
+theorem :: BKMODEL4:11
+  for P being Point of BK-model-Plane
+  for p being Element of BK_model st P = p holds
+  BK_to_T2 P = BK_to_REAL2 p & Tn2TR BK_to_T2 P = BK_to_REAL2 p;
+
+theorem :: BKMODEL4:12
+  for P,Q,R being Point of BK-model-Plane
+  for P2,Q2,R2 being POINT of TarskiEuclid2Space st
+  P2 = BK_to_T2 P & Q2 = BK_to_T2 Q & R2 = BK_to_T2 R
+  holds between P,Q,R iff between P2,Q2,R2;
+
+theorem :: BKMODEL4:13
+  for P,Q being Element of TOP-REAL 2 st P <> Q holds
+  P.1 <> Q.1 or P.2 <> Q.2;
+
+theorem :: BKMODEL4:14
+  for a,b being Real
+  for P,Q being Element of TOP-REAL 2 st P <> Q &
+  (1 - a) * P + a * Q = (1 - b) * P + b * Q holds
+  a = b;
+
+theorem :: BKMODEL4:15
+  for P,Q being Point of BK-model-Plane st Tn2TR BK_to_T2 P = Tn2TR BK_to_T2 Q
+  holds P = Q;
+
+definition
+  let P,Q,R be Point of BK-model-Plane;
+  assume that
+ between P,Q,R and
+ P <> R;
+  func length(P,Q,R) -> Real means
+:: BKMODEL4:def 3
+
+  0 <= it <= 1 &
+  Tn2TR BK_to_T2 Q = (1 - it) * Tn2TR BK_to_T2 P + it * Tn2TR BK_to_T2 R;
+end;
+
+theorem :: BKMODEL4:16
+  for P,Q being Point of BK-model-Plane holds
+  between P,P,Q & between P,Q,Q;
+
+theorem :: BKMODEL4:17
+  for P,Q being Point of BK-model-Plane st P <> Q holds
+  length(P,P,Q) = 0 & length(P,Q,Q) = 1;
+
+theorem :: BKMODEL4:18
+  for N being Matrix of 3,F_Real st
+  N = <* <* 2,   0,    -1 *>,
+         <* 0, sqrt 3,  0 *>,
+         <* 1,   0,    -2 *> *> holds
+  Det N = (-3) * sqrt 3 & N is invertible;
+
+theorem :: BKMODEL4:19
+  for a11,a12,a13,a21,a22,a23,a31,a32,a33,
+      b11,b12,b13,b21,b22,b23,b31,b32,b33,
+      ab11,ab12,ab13,ab21,ab22,ab23,ab31,ab32,ab33 being Element of F_Real
+  for A,B being Matrix of 3,F_Real st
+  A = <* <* a11,a12,a13 *>,
+         <* a21,a22,a23 *>,
+         <* a31,a32,a33 *> *> &
+  B = <* <* b11,b12,b13 *>,
+         <* b21,b22,b23 *>,
+         <* b31,b32,b33 *> *> &
+  ab11 = a11 * b11 + a12 * b21 + a13 * b31 &
+  ab12 = a11 * b12 + a12 * b22 + a13 * b32 &
+  ab13 = a11 * b13 + a12 * b23 + a13 * b33 &
+  ab21 = a21 * b11 + a22 * b21 + a23 * b31 &
+  ab22 = a21 * b12 + a22 * b22 + a23 * b32 &
+  ab23 = a21 * b13 + a22 * b23 + a23 * b33 &
+  ab31 = a31 * b11 + a32 * b21 + a33 * b31 &
+  ab32 = a31 * b12 + a32 * b22 + a33 * b32 &
+  ab33 = a31 * b13 + a32 * b23 + a33 * b33 holds
+  A * B = <* <* ab11, ab12, ab13 *>,
+             <* ab21, ab22, ab23 *>,
+             <* ab31, ab32, ab33 *> *>;
+
+theorem :: BKMODEL4:20
+  for N1,N2 being Matrix of 3,F_Real st
+  N1 = <* <* 2,    0,   -1 *>,
+          <* 0, sqrt 3,  0 *>,
+          <* 1,    0,   -2 *> *> &
+  N2 = <* <* 2/3,   0,     -1/3  *>,
+          <* 0,  1/sqrt 3,  0   *>,
+          <* 1/3,   0,     -2/3 *> *> holds
+  N1 * N2 = <* <* 1,0,0 *>,
+               <* 0,1,0 *>,
+               <* 0,0,1 *> *>;
+
+theorem :: BKMODEL4:21
+  for N1,N2 being Matrix of 3,F_Real st
+  N2 = <* <* 2,   0,   -1 *>,
+          <* 0, sqrt 3, 0 *>,
+          <* 1,   0,   -2 *> *> &
+  N1 = <* <* 2/3,   0,     -1/3 *>,
+          <* 0,  1/sqrt 3,   0  *>,
+          <* 1/3,   0,     -2/3 *> *> holds
+  N1 * N2 = <* <* 1,0,0 *>,
+               <* 0,1,0 *>,
+               <* 0,0,1 *> *>;
+
+theorem :: BKMODEL4:22
+  for N1,N2 being Matrix of 3,F_Real st
+  N1 = <* <* 2,   0,   -1 *>,
+          <* 0, sqrt 3, 0 *>,
+          <* 1,   0,   -2 *> *> &
+  N2 = <* <* 2/3,     0,     -1/3 *>,
+          <* 0,    1/sqrt 3,    0 *>,
+          <* 1/3,     0,     -2/3 *> *>
+  holds N1 is_reverse_of N2;
+
+theorem :: BKMODEL4:23
+  for N being invertible Matrix of 3,F_Real st
+  N = <* <* 2/3,   0   ,-1/3 *>,
+         <* 0, 1/sqrt 3, 0   *>,
+         <* 1/3,   0   ,-2/3 *> *> holds
+  homography(N).:absolute c= absolute;
+
+theorem :: BKMODEL4:24
+  for N being invertible Matrix of 3,F_Real st
+  N = <* <* 2,   0   , -1 *>,
+         <* 0, sqrt 3,  0 *>,
+         <* 1,   0   , -2 *> *>
+  holds
+  homography(N).:absolute = absolute;
+
+theorem :: BKMODEL4:25
+  for a,b,r being Real
+  for P,Q,R being Element of TOP-REAL 2 st
+  Q in LSeg(P,R) & P in inside_of_circle(a,b,r) & R in inside_of_circle(a,b,r)
+  holds Q in inside_of_circle(a,b,r);
+
+theorem :: BKMODEL4:26
+  for u,v being non zero Element of TOP-REAL 3 st
+  Dir u = Dir v & u.3 <> 0 & u.3 = v.3 holds u = v;
+
+theorem :: BKMODEL4:27
+  for R being Element of ProjectiveSpace TOP-REAL 3
+  for P,Q being Element of BK_model
+  for u,v,w being non zero Element of TOP-REAL 3
+  for r being Real st 0 <= r <= 1 & P = Dir u &
+  Q = Dir v & R = Dir w & u.3 = 1 & v.3 = 1 &
+  w = r * u + (1 - r) * v holds R is Element of BK_model;
+
+theorem :: BKMODEL4:28
+  for N being invertible Matrix of 3,F_Real
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P,Q being Point of ProjectiveSpace TOP-REAL 3
+  for u,v being non zero Element of TOP-REAL 3 st
+  N = <* <* n11,n12,n13 *>,
+         <* n21,n22,n23 *>,
+         <* n31,n32,n33 *> *> &
+  P = Dir u & Q = Dir v & Q = homography(N).P & u.3 = 1
+  holds ex a being non zero Real st
+  v.1 = a * (n11 * u.1 + n12 * u.2 + n13) &
+  v.2 = a * (n21 * u.1 + n22 * u.2 + n23) &
+  v.3 = a * (n31 * u.1 + n32 * u.2 + n33);
+
+theorem :: BKMODEL4:29
+  for N being invertible Matrix of 3,F_Real
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of BK_model
+  for Q being Point of ProjectiveSpace TOP-REAL 3
+  for u,v being non zero Element of TOP-REAL 3 st
+  N = <* <* n11,n12,n13 *>,
+         <* n21,n22,n23 *>,
+         <* n31,n32,n33 *> *> &
+  P = Dir u & Q = Dir v & Q = homography(N).P &
+  u.3 = 1 & v.3 = 1 holds n31 * u.1 + n32 * u.2 + n33 <> 0 &
+  v.1 = (n11 * u.1 + n12 * u.2 + n13) / (n31 * u.1 + n32 * u.2 + n33) &
+  v.2 = (n21 * u.1 + n22 * u.2 + n23) / (n31 * u.1 + n32 * u.2 + n33);
+
+theorem :: BKMODEL4:30
+  for N being invertible Matrix of 3,F_Real
+  for h being Element of SubGroupK-isometry
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of BK_model
+  for u being non zero Element of TOP-REAL 3 st
+  h = homography(N) & N = <* <* n11,n12,n13 *>,
+                             <* n21,n22,n23 *>,
+                             <* n31,n32,n33 *> *> &
+  P = Dir u & u.3 = 1 holds n31 * u.1 + n32 * u.2 + n33 <> 0;
+
+theorem :: BKMODEL4:31
+  for N being invertible Matrix of 3,F_Real
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of absolute
+  for Q being Point of ProjectiveSpace TOP-REAL 3
+  for u,v being non zero Element of TOP-REAL 3 st
+  N = <* <* n11,n12,n13 *>,
+         <* n21,n22,n23 *>,
+         <* n31,n32,n33 *> *> &
+  P = Dir u & Q = Dir v & Q = homography(N).P & u.3 = 1 & v.3 = 1
+  holds n31 * u.1 + n32 * u.2 + n33 <> 0 &
+  v.1 = (n11 * u.1 + n12 * u.2 + n13) / (n31 * u.1 + n32 * u.2 + n33) &
+  v.2 = (n21 * u.1 + n22 * u.2 + n23) / (n31 * u.1 + n32 * u.2 + n33);
+
+theorem :: BKMODEL4:32
+  for N being invertible Matrix of 3,F_Real
+  for h being Element of SubGroupK-isometry
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of absolute
+  for u being non zero Element of TOP-REAL 3 st
+  h = homography(N) & N = <* <* n11,n12,n13 *>,
+                             <* n21,n22,n23 *>,
+                             <* n31,n32,n33 *> *> &
+  P = Dir u & u.3 = 1 holds n31 * u.1 + n32 * u.2 + n33 <> 0;
+
+theorem :: BKMODEL4:33
+  for N being invertible Matrix of 3,F_Real
+  for h being Element of SubGroupK-isometry
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of BK_model
+  for u being non zero Element of TOP-REAL 3 st
+  h = homography(N) & N = <* <* n11,n12,n13 *>,
+                             <* n21,n22,n23 *>,
+                             <* n31,n32,n33 *> *> &
+  P = Dir u & u.3 = 1 holds
+  homography(N).P = Dir |[
+    (n11 * u.1 + n12 * u.2 + n13) / (n31 * u.1 + n32 * u.2 + n33),
+    (n21 * u.1 + n22 * u.2 + n23) / (n31 * u.1 + n32 * u.2 + n33),
+    1 ]|;
+
+theorem :: BKMODEL4:34
+  for N being invertible Matrix of 3,F_Real
+  for h being Element of SubGroupK-isometry
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of absolute
+  for u being non zero Element of TOP-REAL 3 st
+  h = homography(N) & N = <* <* n11,n12,n13 *>,
+                             <* n21,n22,n23 *>,
+                             <* n31,n32,n33 *> *> &
+  P = Dir u & u.3 = 1 holds
+  homography(N).P = Dir |[
+    (n11 * u.1 + n12 * u.2 + n13) / (n31 * u.1 + n32 * u.2 + n33),
+    (n21 * u.1 + n22 * u.2 + n23) / (n31 * u.1 + n32 * u.2 + n33),
+    1 ]|;
+
+theorem :: BKMODEL4:35
+  for A being Subset of TOP-REAL 3
+  for B being convex non empty Subset of TOP-REAL 2
+  for r being Real
+  for x being Element of TOP-REAL 3 st
+  A = {x where x is Element of TOP-REAL 3:|[x`1,x`2]| in B & x`3 = r}
+  holds A is non empty convex;
+
+theorem :: BKMODEL4:36
+  for n1,n2,n3 being Element of F_Real
+  for n,u being Element of TOP-REAL 3 st n = <* n1,n2,n3 *> &
+  u.3 = 1 holds |( n, u )| = n1 * u.1 + n2 * u.2 + n3;
+
+theorem :: BKMODEL4:37
+  for A being convex non empty Subset of TOP-REAL 3
+  for n,u,v being Element of TOP-REAL 3 st
+  (for w being Element of TOP-REAL 3 st w in A holds |( n,w )| <> 0) &
+  u in A & v in A holds 0 < |( n,u )| * |( n,v )|;
+
+theorem :: BKMODEL4:38
+  for n31,n32,n33 being Element of F_Real
+  for u,v being Element of TOP-REAL 2 st u in inside_of_circle(0,0,1) &
+  v in inside_of_circle(0,0,1) &
+  (for w being Element of TOP-REAL 2 st w in inside_of_circle(0,0,1) holds
+  n31 * w.1 + n32 * w.2 + n33 <> 0) holds
+  0 < (n31 * u.1 + n32 * u.2 + n33) * (n31 * v.1 + n32 * v.2 + n33);
+
+theorem :: BKMODEL4:39
+  for n31,n32,n33 being Element of F_Real
+  for u,v being Element of TOP-REAL 2 st u in inside_of_circle(0,0,1) &
+  v in circle(0,0,1) &
+  (for w be Element of TOP-REAL 2 st w in closed_inside_of_circle(0,0,1) holds
+  n31 * w.1 + n32 * w.2 + n33 <> 0) holds
+  0 < (n31 * u.1 + n32 * u.2 + n33) * (n31 * v.1 + n32 * v.2 + n33);
+
+theorem :: BKMODEL4:40
+  for l,r being Real
+  for u,v,w being Element of TOP-REAL 3
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33,nu1,nu2,nu3,nv1,
+  nv2,nv3,nw1,nw2,nw3 being Real st
+  nu3 <> 0 & nv3 <> 0 & nw3 <> 0 &
+  r = (l * nv3) / ((1 - l) * nu3 + l * nv3) &
+  (1 - l) * nu3 + l * nv3 <> 0 &
+  w = (1 - l) * u + l * v &
+  nu1 = n11 * u.1 + n12 * u.2 + n13 &
+  nu2 = n21 * u.1 + n22 * u.2 + n23 &
+  nu3 = n31 * u.1 + n32 * u.2 + n33 &
+  nv1 = n11 * v.1 + n12 * v.2 + n13 &
+  nv2 = n21 * v.1 + n22 * v.2 + n23 &
+  nv3 = n31 * v.1 + n32 * v.2 + n33 &
+  nw1 = n11 * w.1 + n12 * w.2 + n13 &
+  nw2 = n21 * w.1 + n22 * w.2 + n23 &
+  nw3 = n31 * w.1 + n32 * w.2 + n33 holds
+  (1 - r) * |[nu1 / nu3,nu2 / nu3,1]| + r * |[nv1 / nv3,nv2 / nv3,1]|
+    = |[nw1 / nw3,nw2 / nw3,1]|;
+
+theorem :: BKMODEL4:41
+  for N being invertible Matrix of 3,F_Real
+  for h being Element of SubGroupK-isometry
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for P being Element of BK_model st h = homography(N) &
+  N = <* <* n11,n12,n13 *>, <* n21,n22,n23 *>, <* n31,n32,n33 *> *>
+  holds homography(N).P = Dir |[
+    (n11 * (BK_to_REAL2 P)`1 + n12 * (BK_to_REAL2 P)`2 + n13) /
+    (n31 * (BK_to_REAL2 P)`1 + n32 * (BK_to_REAL2 P)`2 + n33),
+    (n21 * (BK_to_REAL2 P)`1 + n22 * (BK_to_REAL2 P)`2 + n23) /
+    (n31 * (BK_to_REAL2 P)`1 + n32 * (BK_to_REAL2 P)`2 + n33),1 ]|;
+
+theorem :: BKMODEL4:42
+  for h being Element of SubGroupK-isometry
+  for N being invertible Matrix of 3,F_Real
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for u2 being Element of TOP-REAL 2
+  st h = homography(N) & N = <* <* n11,n12,n13 *>,
+                                <* n21,n22,n23 *>,
+                                <* n31,n32,n33 *> *> &
+  u2 in inside_of_circle(0,0,1) holds n31 * u2.1 + n32 * u2.2 + n33 <> 0;
+
+theorem :: BKMODEL4:43
+  for r being positive Real
+  for u being Element of TOP-REAL 2 st u in circle(0,0,r)
+  holds u is non zero;
+
+theorem :: BKMODEL4:44
+  for h being Element of SubGroupK-isometry
+  for N being invertible Matrix of 3,F_Real
+  for n11,n12,n13,n21,n22,n23,n31,n32,n33 being Element of F_Real
+  for u2 being Element of TOP-REAL 2
+  st h = homography(N) & N = <* <* n11,n12,n13 *>,
+                                <* n21,n22,n23 *>,
+                                <* n31,n32,n33 *> *> &
+  u2 in closed_inside_of_circle(0,0,1) holds n31 * u2.1 + n32 * u2.2 + n33 <> 0
+;
+
+theorem :: BKMODEL4:45
+  for a,b,c,d,e,f,r being Real st
+  (1 - r) * |[a,b,1]| + r * |[c,d,1]| = |[e,f,1]| holds
+  (1 - r) * |[a,b]| + r * |[c,d]| = |[e,f]|;
+
+theorem :: BKMODEL4:46
+  for P,Q,R,P9,Q9,R9 being POINT of BK-model-Plane
+  for p,q,r,p9,q9,r9 being Element of BK_model
+  for h being Element of SubGroupK-isometry
+  for N being invertible Matrix of 3,F_Real st h = homography(N) &
+  between P,Q,R & P = p & Q = q & R = r & p9 = homography(N).p &
+  q9 = homography(N).q & r9 = homography(N).r &
+  P9 = p9 & Q9 = q9 & R9 = r9 holds between P9,Q9,R9;
+
+definition
+  let P be Point of ProjectiveSpace TOP-REAL 3;
+  attr P is point_at_infty means
+:: BKMODEL4:def 4
+
+  ex u being non zero Element of TOP-REAL 3 st
+  P = Dir u & u`3 = 0;
+end;
+
+theorem :: BKMODEL4:47
+  for P being Point of ProjectiveSpace TOP-REAL 3 st
+  ex u being non zero Element of TOP-REAL 3 st
+  P = Dir u & u`3 <> 0 holds P is non point_at_infty;
+
+registration
+  cluster point_at_infty for Point of ProjectiveSpace TOP-REAL 3;
+  cluster non point_at_infty for Point of ProjectiveSpace TOP-REAL 3;
+end;
+
+definition
+  let P being non point_at_infty Point of ProjectiveSpace TOP-REAL 3;
+  func RP3_to_REAL2 P -> Element of REAL 2 means
+:: BKMODEL4:def 5
+
+  ex u being non zero Element of TOP-REAL 3 st P = Dir u & u`3 = 1 &
+  it = |[u`1,u`2]|;
+end;
+
+definition
+  let P be non point_at_infty Point of ProjectiveSpace TOP-REAL 3;
+  func RP3_to_T2 P -> Point of TarskiEuclid2Space equals
+:: BKMODEL4:def 6
+    RP3_to_REAL2 P;
+end;
+
+theorem :: BKMODEL4:48
+  for P,Q,R,P9,Q9,R9 being
+    non point_at_infty Element of ProjectiveSpace TOP-REAL 3
+  for h being Element of SubGroupK-isometry
+  for N being invertible Matrix of 3,F_Real st h = homography(N) &
+  P in BK_model & Q in BK_model & R in absolute &
+  P9 = homography(N).P & Q9 = homography(N).Q & R9 = homography(N).R &
+  between RP3_to_T2 P,RP3_to_T2 Q,RP3_to_T2 R holds
+  between RP3_to_T2 P9,RP3_to_T2 Q9,RP3_to_T2 R9;
+
+theorem :: BKMODEL4:49
+  for a,b,c being Real
+  for u,v,w being Element of TOP-REAL 3
+  st a <> 0 & a + b + c = 0 &
+  a * u + b * v + c * w = 0.TOP-REAL 3 holds
+  u in Line(v,w);
+
+theorem :: BKMODEL4:50
+  for P,Q,R being non point_at_infty Point of ProjectiveSpace TOP-REAL 3
+  for u,v,w being non zero Element of TOP-REAL 3 st
+  P = Dir u & Q = Dir v & R = Dir w &
+  u`3 = 1 & v`3 = 1 & w`3 = 1 holds
+  P,Q,R are_collinear iff u,v,w are_collinear;
+
+theorem :: BKMODEL4:51
+  for u,v,w being Element of TOP-REAL 3 st u in LSeg(v,w) holds
+  |[u`1,u`2]| in LSeg ( |[v`1,v`2]| , |[w`1,w`2]| );
+
+theorem :: BKMODEL4:52
+  for u,v,w being Element of TOP-REAL 2 st u in LSeg(v,w) holds
+  |[u`1,u`2,1]| in LSeg(|[v`1,v`2,1]|,|[w`1,w`2,1]|);
+
+theorem :: BKMODEL4:53
+  for P,Q,R being non point_at_infty Point of ProjectiveSpace TOP-REAL 3
+  holds P,Q,R are_collinear iff Collinear RP3_to_T2 P,RP3_to_T2 Q,RP3_to_T2 R;
+
+theorem :: BKMODEL4:54
+  for u,v,w being Element of TOP-REAL 2 st u,v,w are_collinear holds
+  |[u`1,u`2,1]|,|[v`1,v`2,1]|,|[w`1,w`2,1]| are_collinear;
+
+theorem :: BKMODEL4:55
+  for P,Q,P1 being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  P in BK_model & Q in BK_model & P1 in absolute :::& P,Q,P1 are_collinear
+    holds
+  not between RP3_to_T2 Q,RP3_to_T2 P1,RP3_to_T2 P;
+
+definition
+  func Dir001 -> non point_at_infty Element of
+    ProjectiveSpace TOP-REAL 3 equals
+:: BKMODEL4:def 7
+    Dir |[0,0,1]|;
+end;
+
+definition
+  func Dir101 -> non point_at_infty Element of
+    ProjectiveSpace TOP-REAL 3 equals
+:: BKMODEL4:def 8
+    Dir |[1,0,1]|;
+end;
+
+theorem :: BKMODEL4:56
+  for P,Q being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  P in absolute & Q in absolute
+  holds RP3_to_T2 Dir001, RP3_to_T2 P equiv RP3_to_T2 Dir001,RP3_to_T2 Q;
+
+theorem :: BKMODEL4:57
+  for P,Q,R being non point_at_infty Element of ProjectiveSpace TOP-REAL 3
+  for u,v,w being non zero Element of TOP-REAL 3 st
+  P in absolute & Q in absolute & P <> Q & P = Dir u & Q = Dir v & R = Dir w &
+  u`3 = 1 & v`3 = 1 & w = |[ (u`1 + v`1) / 2,(u`2 + v`2) / 2,1]| holds
+  R in BK_model;
+
+theorem :: BKMODEL4:58
+  for R1,R2 being Point of TarskiEuclid2Space st
+  Tn2TR R1 in circle(0,0,1) & Tn2TR R2 in circle(0,0,1) & R1 <> R2 holds
+  ex P being Element of BK-model-Plane st between R1,BK_to_T2 P,R2;
+
+theorem :: BKMODEL4:59
+  for P,Q being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  RP3_to_T2 P = RP3_to_T2 Q holds P = Q;
+
+theorem :: BKMODEL4:60
+  for R1,R2 being non point_at_infty Element of ProjectiveSpace TOP-REAL 3
+  st R1 in absolute & R2 in absolute & R1 <> R2 holds
+  ex P being Element of BK-model-Plane st
+  between RP3_to_T2 R1,BK_to_T2 P,RP3_to_T2 R2;
+
+theorem :: BKMODEL4:61
+  for P,Q,R being Point of TarskiEuclid2Space st between P,Q,R &
+  Tn2TR P in inside_of_circle(0,0,1) & Tn2TR R in inside_of_circle(0,0,1)
+  holds Tn2TR Q in inside_of_circle(0,0,1);
+
+theorem :: BKMODEL4:62
+  for P being non point_at_infty Element of ProjectiveSpace TOP-REAL 3
+  st P in absolute holds RP3_to_REAL2 P in circle(0,0,1);
+
+theorem :: BKMODEL4:63
+  for P being non point_at_infty Element of ProjectiveSpace TOP-REAL 3
+  st P in BK_model holds RP3_to_REAL2 P in inside_of_circle(0,0,1);
+
+theorem :: BKMODEL4:64
+  for P being non point_at_infty Point of ProjectiveSpace TOP-REAL 3
+  for Q being Element of BK_model st P = Q holds RP3_to_REAL2 P = BK_to_REAL2 Q
+;
+
+theorem :: BKMODEL4:65
+  for P,Q,R1,R2 being non point_at_infty Element of ProjectiveSpace
+  TOP-REAL 3 st P <> Q & P in BK_model & R1 in absolute &
+  R2 in absolute & between RP3_to_T2 P,RP3_to_T2 Q,RP3_to_T2 R1 &
+  between RP3_to_T2 P,RP3_to_T2 Q,RP3_to_T2 R2 holds R1 = R2;
+
+theorem :: BKMODEL4:66
+  for P,Q,P1,P2 being non point_at_infty Element of ProjectiveSpace
+  TOP-REAL 3 st P <> Q & P in BK_model & Q in BK_model & P1 in absolute &
+  P2 in absolute & P1 <> P2 & P,Q,P1 are_collinear & P,Q,P2 are_collinear
+  holds between RP3_to_T2 Q,RP3_to_T2 P,RP3_to_T2 P1 or
+  between RP3_to_T2 Q,RP3_to_T2 P,RP3_to_T2 P2;
+
+theorem :: BKMODEL4:67
+  for P,Q being Element of BK_model st P <> Q holds
+  ex R being Element of absolute st
+  (for p,q,r being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  p = P & q = Q & r = R holds between RP3_to_T2 q,RP3_to_T2 p,RP3_to_T2 r);
+
+theorem :: BKMODEL4:68
+  for P,Q being Element of BK_model st P <> Q holds
+  ex R being Element of absolute st
+  (for p,q,r being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  p = P & q = Q & r = R holds between RP3_to_T2 p,RP3_to_T2 q,RP3_to_T2 r);
+
+theorem :: BKMODEL4:69
+  Dir |[1,0,1]| is Element of absolute;
+
+theorem :: BKMODEL4:70
+  for a,b being POINT of BK-model-Plane holds a,a equiv b,b;
+
+theorem :: BKMODEL4:71
+  for P being Element of BK_model holds
+  P is non point_at_infty Element of ProjectiveSpace TOP-REAL 3;
+
+theorem :: BKMODEL4:72
+  for P being Element of absolute holds
+  P is non point_at_infty Element of ProjectiveSpace TOP-REAL 3;
+
+theorem :: BKMODEL4:73
+  for P being Element of BK_model
+  for P9 being non point_at_infty Element of ProjectiveSpace TOP-REAL 3 st
+  P = P9 holds RP3_to_REAL2 P9 = BK_to_REAL2 P;
+
+theorem :: BKMODEL4:74
+  for a, q, b, c being POINT of BK-model-Plane holds
+  ex x being POINT of BK-model-Plane st between q,a,x & a,x equiv b,c;
+
+theorem :: BKMODEL4:75
+  for P,Q being POINT of BK-model-Plane st BK_to_T2 P = BK_to_T2 Q holds P = Q;
+
+theorem :: BKMODEL4:76
+  for a,b,r being Real
+  for P,Q,R being Element of TOP-REAL 2 st
+  P in inside_of_circle(a,b,r) & R in inside_of_circle(a,b,r) holds
+  LSeg(P,R) c= inside_of_circle(a,b,r);
+
+begin :: SegmentConstruction
+
+theorem :: BKMODEL4:77
+  BK-model-Plane is satisfying_SegmentConstruction;
+
+begin :: BetweennessIdentity
+
+theorem :: BKMODEL4:78
+  BK-model-Plane is satisfying_BetweennessIdentity;
+
+begin :: Pasch
+
+theorem :: BKMODEL4:79
+  BK-model-Plane is satisfying_Pasch;
+

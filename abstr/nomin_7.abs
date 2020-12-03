@@ -1,0 +1,475 @@
+:: Partial Correctness of a Fibonacci Algorithm
+::  by Artur Korni{\l}owicz
+:: 
+:: Received May 31, 2020
+:: Copyright (c) 2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies NOMIN_1, NUMBERS, ZFMISC_1, SUBSET_1, XBOOLE_0, RELAT_1, FUNCT_1,
+      FINSEQ_1, NAT_1, ARYTM_3, PARTFUN1, XBOOLEAN, TARSKI, NOMIN_3, NOMIN_4,
+      XCMPLX_0, NOMIN_2, PARTPR_1, PARTPR_2, NOMIN_5, CARD_1, PRE_FF, NOMIN_7,
+      XXREAL_0, ARYTM_1;
+ notations TARSKI, XBOOLE_0, ZFMISC_1, SUBSET_1, ENUMSET1, ORDINAL1, NUMBERS,
+      MARGREL1, RELAT_1, FUNCT_1, RELSET_1, PARTFUN1, FUNCT_2, CARD_1,
+      FINSEQ_1, BINOP_1, XXREAL_0, XCMPLX_0, FUNCT_3, NEWTON, PRE_FF, NOMIN_1,
+      PARTPR_1, PARTPR_2, NOMIN_2, NOMIN_3, NOMIN_4, NOMIN_5, NOMIN_6;
+ constructors RELSET_1, INT_2, BINOP_1, FUNCT_3, NEWTON, ENUMSET1, PRE_FF,
+      NOMIN_2, NOMIN_3, NOMIN_4, NOMIN_5, NOMIN_6;
+ registrations XBOOLE_0, RELAT_1, FUNCT_1, ORDINAL1, RELSET_1, INT_1, NOMIN_3,
+      NOMIN_1, MARGREL1, XCMPLX_0, NEWTON02, NUMBERS, NOMIN_2, NAT_1, PRE_FF,
+      XXREAL_0, XREAL_0, CARD_1, FINSEQ_1, NEWTON04, ZFMISC_1, NOMIN_4,
+      NOMIN_5, FUNCT_2, NOMIN_6, PARTFUN1;
+ requirements NUMERALS, BOOLE, SUBSET, REAL, ARITHM;
+
+
+begin :: Introduction
+
+reserve D for non empty set;
+reserve m,n,N for Nat;
+reserve size for non zero Nat;
+reserve f1,f2,f3,f4,f5,f6 for BinominativeFunction of D;
+reserve p1,p2,p3,p4,p5,p6,p7 for PartialPredicate of D;
+reserve d,v for object;
+reserve V,A for set;
+reserve z for Element of V;
+reserve val for Function;
+reserve loc for V-valued Function;
+reserve d1 for NonatomicND of V,A;
+reserve T for TypeSCNominativeData of V,A;
+
+definition
+  let R1,R2 be Relation;
+  pred R1 is_valid_wrt R2 means
+:: NOMIN_7:def 1
+  rng R1 c= dom R2;
+end;
+
+definition
+  let V,loc,val,N;
+  pred loc,val are_different_wrt N means
+:: NOMIN_7:def 2
+  for m,n being Nat st 1 <= m <= N & 1 <= n <= N holds
+  val.m <> loc/.n;
+end;
+
+theorem :: NOMIN_7:1
+  loc|Seg N is one-to-one & Seg N c= dom loc implies
+  for i,j being Nat st 1 <= i <= N & 1 <= j <= N & i <> j holds
+  loc/.i <> loc/.j;
+
+theorem :: NOMIN_7:2
+  V is non empty & v in dom d1 implies
+  local_overlapping(V,A,d1,denaming(V,A,v).d1,z).z = d1.v;
+
+definition
+  let D,f1,f2,f3,f4,f5,f6;
+  func PP_composition(f1,f2,f3,f4,f5,f6) -> BinominativeFunction of D equals
+:: NOMIN_7:def 3
+  PP_composition(PP_composition(f1,f2,f3,f4,f5),f6);
+end;
+
+::$N Unconditional composition rule for 6 programs
+theorem :: NOMIN_7:3
+  <*p1,f1,p2*> is SFHT of D & <*p2,f2,p3*> is SFHT of D &
+  <*p3,f3,p4*> is SFHT of D & <*p4,f4,p5*> is SFHT of D &
+  <*p5,f5,p6*> is SFHT of D & <*p6,f6,p7*> is SFHT of D &
+  <*PP_inversion(p2),f2,p3*> is SFHT of D &
+  <*PP_inversion(p3),f3,p4*> is SFHT of D &
+  <*PP_inversion(p4),f4,p5*> is SFHT of D &
+  <*PP_inversion(p5),f5,p6*> is SFHT of D &
+  <*PP_inversion(p6),f6,p7*> is SFHT of D
+  implies <*p1,PP_composition(f1,f2,f3,f4,f5,f6),p7*> is SFHT of D;
+
+definition
+  let V,A,loc,val,d1;
+  let size be Nat such that
+ size > 0;
+  func LocalOverlapSeq(A,loc,val,d1,size) -> FinSequence of ND(V,A) means
+:: NOMIN_7:def 4
+
+  len it = size &
+  it.1 = local_overlapping(V,A,d1,denaming(V,A,val.1).d1,loc/.1) &
+  for n being Nat st 1 <= n < len it holds
+    it.(n+1) =
+       local_overlapping(V,A,it.n,denaming(V,A,val.(n+1)).(it.n),loc/.(n+1));
+end;
+
+definition
+  let V,A;
+  let f be Function;
+  attr f is (V,A)-NonatomicND-yielding means
+:: NOMIN_7:def 5
+  for n being object st n in dom f holds f.n is NonatomicND of V,A;
+end;
+
+definition
+  let V,A;
+  let f be FinSequence;
+  redefine attr f is (V,A)-NonatomicND-yielding means
+:: NOMIN_7:def 6
+  for n being Nat st 1 <= n <= len f holds f.n is NonatomicND of V,A;
+end;
+
+registration
+  let V,A,d1;
+  cluster <*d1*> -> (V,A)-NonatomicND-yielding;
+end;
+
+registration
+  let V,A;
+  cluster (V,A)-NonatomicND-yielding for FinSequence;
+end;
+
+theorem :: NOMIN_7:4
+  for f being (V,A)-NonatomicND-yielding FinSequence holds
+  n in dom f implies f.n is NonatomicND of V,A;
+
+registration
+  let V,A,loc,val,d1,size;
+  cluster LocalOverlapSeq(A,loc,val,d1,size) -> (V,A)-NonatomicND-yielding;
+end;
+
+registration
+  let V,A,loc,val,d1,size,n;
+  cluster LocalOverlapSeq(A,loc,val,d1,size).n -> Function-like Relation-like;
+end;
+
+theorem :: NOMIN_7:5
+  V is non empty & A is_without_nonatomicND_wrt V implies
+  for n being Nat st 1 <= n & n < size &
+  val.(n+1) in dom(LocalOverlapSeq(A,loc,val,d1,size).n) holds
+  dom(LocalOverlapSeq(A,loc,val,d1,size).(n+1)) =
+  { loc/.(n+1) } \/ dom(LocalOverlapSeq(A,loc,val,d1,size).n);
+
+theorem :: NOMIN_7:6
+  V is non empty & A is_without_nonatomicND_wrt V implies
+  for n being Nat st 1 <= n & n < size &
+  val.(n+1) in dom(LocalOverlapSeq(A,loc,val,d1,size).n) holds
+  dom(LocalOverlapSeq(A,loc,val,d1,size).n) c=
+  dom(LocalOverlapSeq(A,loc,val,d1,size).(n+1));
+
+definition
+  let V,A,loc,val,d1,size;
+  pred loc,val,size are_correct_wrt d1 means
+:: NOMIN_7:def 7
+  V is non empty & A is_without_nonatomicND_wrt V &
+  val is_valid_wrt d1 & dom LocalOverlapSeq(A,loc,val,d1,size) c= dom val;
+end;
+
+theorem :: NOMIN_7:7
+  loc,val,size are_correct_wrt d1 implies
+  for n being Nat st 1 <= n <= size holds
+  dom(d1) c= dom(LocalOverlapSeq(A,loc,val,d1,size).n);
+
+theorem :: NOMIN_7:8
+  loc,val,size are_correct_wrt d1 implies
+  for m,n being Nat st 1 <= n <= m <= size holds
+  dom(LocalOverlapSeq(A,loc,val,d1,size).n) c=
+  dom(LocalOverlapSeq(A,loc,val,d1,size).m);
+
+theorem :: NOMIN_7:9
+  loc,val,size are_correct_wrt d1 implies
+  for m,n being Nat st 1 <= n <= m <= size holds
+  loc/.n in dom(LocalOverlapSeq(A,loc,val,d1,size).m);
+
+theorem :: NOMIN_7:10
+  loc,val,size are_correct_wrt d1 implies
+  for m,n being Nat st (n in dom val or 1 <= n <= size) & 1 <= m <= size holds
+  val.n in dom(LocalOverlapSeq(A,loc,val,d1,size).m);
+
+theorem :: NOMIN_7:11
+  loc,val,size are_correct_wrt d1 & loc,val are_different_wrt size
+  implies
+  for j,m,n being Nat st 1 <= n <= m < j <= size holds
+  (LocalOverlapSeq(A,loc,val,d1,size).n).(val.j) =
+   (LocalOverlapSeq(A,loc,val,d1,size).m).(val.j);
+
+theorem :: NOMIN_7:12
+  loc,val,size are_correct_wrt d1 &
+  Seg size c= dom loc & loc|Seg size is one-to-one
+  implies
+  for j,m,n being Nat st 1 <= j <= n <= m <= size holds
+  (LocalOverlapSeq(A,loc,val,d1,size).n).(loc/.j) =
+   (LocalOverlapSeq(A,loc,val,d1,size).m).(loc/.j);
+
+theorem :: NOMIN_7:13
+  for val being size-element FinSequence holds
+  Seg size c= dom loc & loc|Seg size is one-to-one &
+  loc,val are_different_wrt size & loc,val,size are_correct_wrt d1
+  implies
+  for m,n st 1 <= n <= m <= size holds
+  LocalOverlapSeq(A,loc,val,d1,size).m.(loc/.n) = d1.(val.n);
+
+theorem :: NOMIN_7:14
+  for val being size-element FinSequence holds
+  loc,val are_different_wrt size & loc,val,size are_correct_wrt d1
+  implies
+  for m,n being Nat st 1 <= m <= size & 1 <= n <= size holds
+  LocalOverlapSeq(A,loc,val,d1,size).m.(val.n) = d1.(val.n);
+
+theorem :: NOMIN_7:15
+  for val being size-element FinSequence holds
+  loc,val,size are_correct_wrt d1 &
+  Seg size c= dom loc & loc|Seg size is one-to-one &
+  loc,val are_different_wrt size
+  implies
+  for j,m,n being Nat st 1 <= j < m <= n <= size holds
+  LocalOverlapSeq(A,loc,val,d1,size).n.(loc/.m) =
+  LocalOverlapSeq(A,loc,val,d1,size).j.(val.m);
+
+definition
+  let V,A,loc,val;
+  let size be Nat such that
+ 0 < size;
+  func initial_assignments_Seq(A,loc,val,size)
+       -> FinSequence of PFuncs(ND(V,A),ND(V,A)) means
+:: NOMIN_7:def 8
+  len it = size &
+  it.1 = SC_assignment(denaming(V,A,val.1),loc/.1) &
+  for n being Nat st 1 <= n < size holds
+   it.(n+1) =
+    PP_composition(it.n,SC_assignment(denaming(V,A,val.(n+1)),loc/.(n+1)));
+end;
+
+definition
+  let V,A,loc,val;
+  let size be Nat;
+  func initial_assignments(A,loc,val,size)
+       -> SCBinominativeFunction of V,A equals
+:: NOMIN_7:def 9
+  initial_assignments_Seq(A,loc,val,size).size;
+end;
+
+begin :: Main algorithm
+
+:: Pseudocode of Fibonacci(n)
+::
+:: i := val.1 :: counter
+:: j := val.2 :: constant 1
+:: n := val.3 :: input
+:: s := val.4 :: result
+:: b := val.5
+:: c := val.6
+::   { s == Fibonacci(i) && b == Fibonacci(i+1) }
+:: while ( i <> n )
+::  c := s
+::  s := b
+::  b := c + s
+::  i := i + j
+:: return s
+::   { n == i && s == Fibonacci(i) && b == Fibonacci(i+1) }
+::
+:: where
+::   val.1 = 0,
+::   val.2 = 1,
+::   val.3 - the number n the Fibonacci of which we compute,
+::   val.4 = 0
+::   val.5 = 1
+::   val.6 = 0
+:: are input data from the environment,
+:: and loc/.1 = i, loc/.2 = j, loc/.3 = n, loc/.4 = s, loc/.5 = b, loc/.6 = c
+
+definition
+  let V,A,loc;
+  func Fibonacci_loop_body(A,loc) -> SCBinominativeFunction of V,A equals
+:: NOMIN_7:def 10
+    PP_composition(
+      SC_assignment(denaming(V,A,loc/.4),loc/.6),
+      SC_assignment(denaming(V,A,loc/.5),loc/.4),
+      SC_assignment(addition(A,loc/.6,loc/.4),loc/.5),
+      SC_assignment(addition(A,loc/.1,loc/.2),loc/.1)
+    );
+end;
+
+definition
+  let V,A,loc;
+  func Fibonacci_main_loop(A,loc) -> SCBinominativeFunction of V,A equals
+:: NOMIN_7:def 11
+  PP_while(PP_not(Equality(A,loc/.1,loc/.3)),Fibonacci_loop_body(A,loc));
+end;
+
+definition
+  let V,A,loc,val;
+  func Fibonacci_main_part(A,loc,val)
+       -> SCBinominativeFunction of V,A equals
+:: NOMIN_7:def 12
+    PP_composition(
+       initial_assignments(A,loc,val,6),
+       Fibonacci_main_loop(A,loc)
+    );
+end;
+
+definition
+  let V,A,loc,val,z;
+  func Fibonacci_program(A,loc,val,z)
+       -> SCBinominativeFunction of V,A equals
+:: NOMIN_7:def 13
+    PP_composition(
+      Fibonacci_main_part(A,loc,val),
+      SC_assignment(denaming(V,A,loc/.4),z)
+    );
+end;
+
+reserve n0 for Nat;
+
+definition
+  let V,A,val,n0,d;
+  pred valid_Fibonacci_input_pred V,A,val,n0,d means
+:: NOMIN_7:def 14
+  ex d1 being NonatomicND of V,A st d = d1 &
+   { val.1, val.2, val.3, val.4, val.5, val.6 } c= dom d1 &
+    d1.(val.1) = 0 & d1.(val.2) = 1 & d1.(val.3) = n0 &
+    d1.(val.4) = 0 & d1.(val.5) = 1 & d1.(val.6) = 0;
+end;
+
+definition
+  let V,A,val,n0;
+  func valid_Fibonacci_input(V,A,val,n0)
+       -> SCPartialNominativePredicate of V,A
+  means
+:: NOMIN_7:def 15
+  dom it = ND(V,A) &
+  for d being object st d in dom it holds
+   (valid_Fibonacci_input_pred V,A,val,n0,d implies it.d = TRUE) &
+   (not valid_Fibonacci_input_pred V,A,val,n0,d
+    implies it.d = FALSE);
+end;
+
+registration
+  let V,A,val,n0;
+  cluster valid_Fibonacci_input(V,A,val,n0) -> total;
+end;
+
+definition
+  let V,A,z,n0,d;
+  pred valid_Fibonacci_output_pred A,z,n0,d means
+:: NOMIN_7:def 16
+  ex d1 being NonatomicND of V,A st d = d1 & z in dom d1 & d1.z = Fib(n0);
+end;
+
+definition
+  let V,A,z,n0;
+  func valid_Fibonacci_output(A,z,n0) -> SCPartialNominativePredicate of V,A
+  means
+:: NOMIN_7:def 17
+  dom it = {d where d is TypeSCNominativeData of V,A:
+       d in dom denaming(V,A,z)} &
+   for d being object st d in dom it holds
+    (valid_Fibonacci_output_pred A,z,n0,d implies it.d = TRUE) &
+    (not valid_Fibonacci_output_pred A,z,n0,d implies it.d = FALSE);
+end;
+
+definition
+  let V,A,loc,n0,d;
+  pred Fibonacci_inv_pred A,loc,n0,d means
+:: NOMIN_7:def 18
+  ex d1 being NonatomicND of V,A st
+   d = d1 & { loc/.1, loc/.2, loc/.3, loc/.4, loc/.5, loc/.6 } c= dom d1 &
+   d1.(loc/.2) = 1 & d1.(loc/.3) = n0 &
+    ex I being Nat st I = d1.(loc/.1) &
+     d1.(loc/.4) = Fib(I) & d1.(loc/.5) = Fib(I+1);
+end;
+
+definition
+  let V,A,loc,n0;
+  func Fibonacci_inv(A,loc,n0) -> SCPartialNominativePredicate of V,A means
+:: NOMIN_7:def 19
+
+  dom it = ND(V,A) &
+  for d being object st d in dom it holds
+   (Fibonacci_inv_pred A,loc,n0,d implies it.d = TRUE) &
+   (not Fibonacci_inv_pred A,loc,n0,d implies it.d = FALSE);
+end;
+
+registration
+  let V,A,loc,n0;
+  cluster Fibonacci_inv(A,loc,n0) -> total;
+end;
+
+theorem :: NOMIN_7:16
+  for val being 6-element FinSequence holds
+  V is non empty & A is_without_nonatomicND_wrt V &
+  Seg 6 c= dom loc & loc|Seg 6 is one-to-one & loc,val are_different_wrt 6
+  implies
+  <* valid_Fibonacci_input(V,A,val,n0),
+     initial_assignments(A,loc,val,6),
+     Fibonacci_inv(A,loc,n0) *> is SFHT of ND(V,A);
+
+theorem :: NOMIN_7:17
+  V is non empty & A is complex-containing & A is_without_nonatomicND_wrt V &
+  (for T holds loc/.1 is_a_value_on T & loc/.2 is_a_value_on T &
+    loc/.4 is_a_value_on T & loc/.6 is_a_value_on T) &
+  Seg 6 c= dom loc & loc|Seg 6 is one-to-one
+  implies
+  <* Fibonacci_inv(A,loc,n0),
+     Fibonacci_loop_body(A,loc),
+     Fibonacci_inv(A,loc,n0) *> is SFHT of ND(V,A);
+
+theorem :: NOMIN_7:18
+  V is non empty & A is complex-containing & A is_without_nonatomicND_wrt V &
+  (for T holds loc/.1 is_a_value_on T & loc/.2 is_a_value_on T &
+    loc/.4 is_a_value_on T & loc/.6 is_a_value_on T) &
+  Seg 6 c= dom loc & loc|Seg 6 is one-to-one
+  implies
+  <* Fibonacci_inv(A,loc,n0),
+     Fibonacci_main_loop(A,loc),
+     PP_and(Equality(A,loc/.1,loc/.3),Fibonacci_inv(A,loc,n0)) *>
+  is SFHT of ND(V,A);
+
+theorem :: NOMIN_7:19
+  for val being 6-element FinSequence holds
+  V is non empty & A is complex-containing & A is_without_nonatomicND_wrt V &
+   (for T holds loc/.1 is_a_value_on T & loc/.2 is_a_value_on T &
+    loc/.4 is_a_value_on T & loc/.6 is_a_value_on T) &
+   Seg 6 c= dom loc & loc|Seg 6 is one-to-one & loc,val are_different_wrt 6
+  implies
+  <* valid_Fibonacci_input(V,A,val,n0),
+     Fibonacci_main_part(A,loc,val),
+     PP_and(Equality(A,loc/.1,loc/.3),Fibonacci_inv(A,loc,n0)) *>
+  is SFHT of ND(V,A);
+
+theorem :: NOMIN_7:20
+  V is non empty & A is_without_nonatomicND_wrt V &
+  (for T holds loc/.1 is_a_value_on T & loc/.3 is_a_value_on T)
+  implies
+  PP_and(Equality(A,loc/.1,loc/.3),Fibonacci_inv(A,loc,n0))
+  ||=
+  SC_Psuperpos(valid_Fibonacci_output(A,z,n0),denaming(V,A,loc/.4),z);
+
+theorem :: NOMIN_7:21
+  V is non empty & A is_without_nonatomicND_wrt V &
+  (for T holds loc/.1 is_a_value_on T & loc/.3 is_a_value_on T)
+  implies
+  <* PP_and(Equality(A,loc/.1,loc/.3),Fibonacci_inv(A,loc,n0)),
+     SC_assignment(denaming(V,A,loc/.4),z),
+     valid_Fibonacci_output(A,z,n0) *> is SFHT of ND(V,A);
+
+theorem :: NOMIN_7:22
+  (for T holds loc/.1 is_a_value_on T & loc/.3 is_a_value_on T)
+  implies
+  <* PP_inversion(PP_and(Equality(A,loc/.1,loc/.3),Fibonacci_inv(A,loc,n0))),
+     SC_assignment(denaming(V,A,loc/.4),z),
+     valid_Fibonacci_output(A,z,n0) *> is SFHT of ND(V,A);
+
+::$N Partial correctness of a Fibonacci algorithm
+theorem :: NOMIN_7:23
+  for val being 6-element FinSequence holds
+  V is non empty & A is complex-containing & A is_without_nonatomicND_wrt V &
+   (for T holds loc/.1 is_a_value_on T & loc/.2 is_a_value_on T &
+    loc/.3 is_a_value_on T & loc/.4 is_a_value_on T & loc/.6 is_a_value_on T) &
+   Seg 6 c= dom loc & loc|Seg 6 is one-to-one &
+   loc,val are_different_wrt 6
+  implies
+  <* valid_Fibonacci_input(V,A,val,n0),
+     Fibonacci_program(A,loc,val,z),
+     valid_Fibonacci_output(A,z,n0) *>
+  is SFHT of ND(V,A);

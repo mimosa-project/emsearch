@@ -1,0 +1,502 @@
+:: About Graph Mappings
+::  by Sebastian Koch
+::
+:: Received August 29, 2019
+:: Copyright (c) 2019-2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies NUMBERS, RELAT_1, FUNCT_1, TARSKI, CARD_1, XBOOLE_0, GLIB_000,
+      PARTFUN1, ZFMISC_1, FUNCOP_1, ALGSTR_0, FUNCT_2, GLIB_009, MOD_4,
+      WAYBEL_0, RING_3, ORDINAL2, CHORD, CARD_2, SCMYCIEL, GLIB_010, GLIB_011;
+ notations TARSKI, XBOOLE_0, XTUPLE_0, ZFMISC_1, SUBSET_1, SETFAM_1, RELAT_1,
+      FUNCT_1, ORDINAL1, RELSET_1, PARTFUN1, FUNCT_2, BINOP_1, DOMAIN_1,
+      SETWISEO, EQREL_1, FUNCOP_1, FUNCT_4, PARTFUN2, CARD_1, PBOOLE, CARD_2,
+      CARD_3, NUMBERS, XCMPLX_0, XXREAL_0, NAT_1, INT_1, VALUED_0, FINSEQ_1,
+      BSPACE, GLIB_000, STRUCT_0, ALGSTR_0, GROUP_1, GROUP_2, GROUP_6,
+      GLIB_001, CHORD, GLIB_008, GLIB_009, GLIB_010;
+ constructors DOMAIN_1, FUNCT_4, XXREAL_0, NAT_1, NAT_D, BINOP_2, CARD_2,
+      FINSEQ_4, PBOOLE, ORDINAL3, WELLORD2, PARTFUN1, RELSET_1, GLIB_000,
+      STRUCT_0, RELAT_1, FUNCT_1, FUNCT_2, ALGSTR_0, GROUP_1, GLIB_001, ABIAN,
+      CARD_3, FINSEQ_1, GLIB_002, GLIB_003, SETFAM_1, EQREL_1, GROUP_2,
+      GROUP_6, GLIB_006, GLIB_007, PARTFUN2, BSPACE, SETWISEO, CHORD, RAT_1,
+      GLIB_008, GLIB_009, GLIB_010, FUNCT_7;
+ registrations XBOOLE_0, RELAT_1, FUNCT_1, ORDINAL1, FUNCOP_1, FINSET_1,
+      NUMBERS, XREAL_0, NAT_1, MEMBERED, FINSEQ_1, GLIB_000, GLIB_002,
+      GLIB_003, INT_1, VALUED_0, CARD_1, FUNCT_2, PARTFUN1, RELSET_1, XTUPLE_0,
+      CARD_3, GROUP_1, STRUCT_0, GLIB_001, ABIAN, FINSEQ_4, GROUP_2, GLIB_006,
+      EQREL_1, GLIB_007, GLIB_008, CHORD, NECKLACE, GLIB_009, GLIB_010,
+      FUNCT_7;
+ requirements ARITHM, BOOLE, NUMERALS, REAL, SUBSET;
+
+
+begin :: Vertex Mappings
+
+definition
+  let G1, G2 be _Graph;
+  mode PVertexMapping of G1, G2 ->
+    PartFunc of the_Vertices_of G1, the_Vertices_of G2 means
+:: GLIB_011:def 1
+
+  for v,w being Vertex of G1
+  st v in dom it & w in dom it & v,w are_adjacent
+  holds it/.v, it/.w are_adjacent;
+end;
+
+theorem :: GLIB_011:1
+  for G1, G2 being _Graph
+  for f being PartFunc of the_Vertices_of G1, the_Vertices_of G2
+  holds f is PVertexMapping of G1, G2 iff
+    for v,w,e being object st v in dom f & w in dom f & e Joins v,w,G1
+    ex e9 being object st e9 Joins f.v,f.w,G2;
+
+definition
+  let G1, G2 be _Graph, f be PVertexMapping of G1, G2;
+  attr f is directed means
+:: GLIB_011:def 2
+
+  for v,w,e being object st v in dom f & w in dom f & e DJoins v,w,G1
+  ex e9 being object st e9 DJoins f.v,f.w,G2;
+  attr f is continuous means
+:: GLIB_011:def 3
+  for v,w being Vertex of G1
+  st v in dom f & w in dom f & f/.v, f/.w are_adjacent
+  holds v, w are_adjacent;
+  attr f is Dcontinuous means
+:: GLIB_011:def 4
+
+  for v,w,e9 being object st v in dom f & w in dom f & e9 DJoins f.v,f.w,G2
+  ex e being object st e DJoins v,w,G1;
+end;
+
+theorem :: GLIB_011:2
+  for G1, G2 being _Graph, f being PVertexMapping of G1, G2
+  holds f is continuous iff
+    for v,w,e9 being object st v in dom f & w in dom f & e9 Joins f.v,f.w,G2
+    ex e being object st e Joins v,w,G1;
+
+theorem :: GLIB_011:3
+  for G1, G2 being _Graph, f being PVertexMapping of G1, G2
+  holds f is continuous iff
+    for v,w being Vertex of G1 st v in dom f & w in dom f
+    holds v, w are_adjacent iff f/.v, f/.w are_adjacent;
+
+registration
+  let G1, G2 be _Graph;
+  cluster Dcontinuous -> continuous for PVertexMapping of G1, G2;
+  cluster empty -> one-to-one Dcontinuous directed continuous
+    for PVertexMapping of G1, G2;
+  cluster total -> non empty for PVertexMapping of G1, G2;
+  cluster onto -> non empty for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1 be simple _Graph, G2 be _Graph;
+  cluster Dcontinuous -> directed for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1 be _Graph, G2 be simple _Graph;
+  cluster directed continuous -> Dcontinuous for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1 be _trivial _Graph, G2 be _Graph;
+  cluster -> directed for PVertexMapping of G1, G2;
+  cluster continuous -> Dcontinuous for PVertexMapping of G1, G2;
+  cluster non empty -> total for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1 be _Graph, G2 be _trivial _Graph;
+  cluster non empty -> onto for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1 be _Graph, G2 be _trivial loopless _Graph;
+  cluster -> Dcontinuous continuous for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1, G2 be _Graph;
+  cluster empty one-to-one directed continuous Dcontinuous
+    for PVertexMapping of G1, G2;
+end;
+
+theorem :: GLIB_011:4
+  for G1, G2 being _Graph
+  for f being PartFunc of the_Vertices_of G1, the_Vertices_of G2
+  holds f is directed PVertexMapping of G1, G2 iff
+    for v,w,e being object st v in dom f & w in dom f & e DJoins v,w,G1
+    ex e9 being object st e9 DJoins f.v,f.w,G2;
+
+registration
+  let G1 be loopless _Graph, G2 be _Graph;
+  cluster non empty one-to-one directed for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1, G2 be loopless _Graph;
+  cluster non empty one-to-one directed continuous Dcontinuous
+    for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1, G2 be non loopless _Graph;
+  cluster non empty one-to-one directed continuous Dcontinuous
+    for PVertexMapping of G1, G2;
+end;
+
+theorem :: GLIB_011:5
+  for G being _Graph holds id the_Vertices_of G is
+    directed continuous Dcontinuous PVertexMapping of G, G;
+
+theorem :: GLIB_011:6
+  for G1, G2 being _Graph, f being PVertexMapping of G1, G2
+  st f is total holds
+    (G2 is loopless implies G1 is loopless) &
+    (G2 is edgeless implies G1 is edgeless);
+
+theorem :: GLIB_011:7
+  for G1, G2 being _Graph, f being continuous PVertexMapping of G1, G2
+  st f is onto holds
+    (G1 is loopless implies G2 is loopless) &
+    (G1 is edgeless implies G2 is edgeless);
+
+definition
+  let G1, G2 be _Graph, f be PVertexMapping of G1, G2;
+  attr f is isomorphism means
+:: GLIB_011:def 5
+  f is total one-to-one onto &
+    for v,w being Vertex of G1
+    holds card G1.edgesBetween({v},{w}) = card G2.edgesBetween({f.v},{f.w});
+  attr f is Disomorphism means
+:: GLIB_011:def 6
+  f is total one-to-one onto &
+    for v,w being Vertex of G1
+    holds card G1.edgesDBetween({v},{w}) = card G2.edgesDBetween({f.v},{f.w}) &
+      card G1.edgesDBetween({w},{v}) = card G2.edgesDBetween({f.w},{f.v});
+end;
+
+registration
+  let G1, G2 be _Graph;
+  cluster isomorphism -> total one-to-one onto continuous
+    for PVertexMapping of G1, G2;
+  cluster Disomorphism -> total one-to-one onto isomorphism
+    continuous directed Dcontinuous for PVertexMapping of G1, G2;
+end;
+
+theorem :: GLIB_011:8
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is total one-to-one continuous for v,w being Vertex of G1
+  holds card G1.edgesBetween({v},{w}) = card G2.edgesBetween({f.v},{f.w});
+
+definition
+  let G1, G2 be non-multi _Graph, f be PVertexMapping of G1, G2;
+  redefine attr f is isomorphism means
+:: GLIB_011:def 7
+  f is total one-to-one onto continuous;
+end;
+
+registration
+  let G1, G2 be non-multi _Graph;
+  cluster total one-to-one onto continuous -> isomorphism
+    for PVertexMapping of G1, G2;
+end;
+
+theorem :: GLIB_011:9
+  for G1, G2 being non-Dmulti _Graph, f being PVertexMapping of G1, G2
+  st f is total one-to-one directed Dcontinuous for v,w being Vertex of G1
+  holds card G1.edgesDBetween({v},{w}) = card G2.edgesDBetween({f.v},{f.w}) &
+    card G1.edgesDBetween({w},{v}) = card G2.edgesDBetween({f.w},{f.v});
+
+definition
+  let G1, G2 be non-Dmulti _Graph, f be PVertexMapping of G1, G2;
+  redefine attr f is Disomorphism means
+:: GLIB_011:def 8
+  f is total one-to-one onto directed Dcontinuous;
+end;
+
+registration
+  let G1, G2 be non-Dmulti _Graph;
+  cluster total one-to-one onto directed Dcontinuous -> Disomorphism
+    for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G be_Graph;
+  cluster Disomorphism isomorphism for PVertexMapping of G, G;
+end;
+
+theorem :: GLIB_011:10
+  for G being _Graph holds id the_Vertices_of G
+    is Disomorphism isomorphism PVertexMapping of G, G;
+
+definition
+  let G1, G2 be _Graph, f be PVertexMapping of G1, G2;
+  attr f is invertible means
+:: GLIB_011:def 9
+  f is one-to-one continuous;
+end;
+
+registration
+  let G1, G2 be _Graph;
+  cluster invertible -> one-to-one continuous for PVertexMapping of G1, G2;
+  cluster one-to-one continuous -> invertible for PVertexMapping of G1, G2;
+  cluster isomorphism -> invertible for PVertexMapping of G1, G2;
+  cluster Disomorphism -> invertible for PVertexMapping of G1, G2;
+  cluster empty invertible for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1, G2 be loopless _Graph;
+  cluster non empty directed invertible for PVertexMapping of G1, G2;
+end;
+
+registration
+  let G1, G2 be non loopless _Graph;
+  cluster non empty directed invertible for PVertexMapping of G1, G2;
+end;
+
+definition
+  let G1, G2 be _Graph, f be invertible PVertexMapping of G1, G2;
+  redefine func f" -> PVertexMapping of G2, G1;
+end;
+
+registration
+  let G1, G2 be _Graph, f be invertible PVertexMapping of G1, G2;
+  cluster f" -> one-to-one continuous invertible for PVertexMapping of G2, G1;
+end;
+
+definition
+  let G1, G2, G3 be _Graph;
+  let f be PVertexMapping of G1, G2, g be PVertexMapping of G2, G3;
+  redefine func g*f -> PVertexMapping of G1, G3;
+end;
+
+theorem :: GLIB_011:11
+  for G1, G2, G3 being _Graph
+  for f being PVertexMapping of G1, G2, g being PVertexMapping of G2, G3
+  st f is continuous & g is continuous holds g*f is continuous;
+
+theorem :: GLIB_011:12
+  for G1, G2, G3 being _Graph
+  for f being PVertexMapping of G1, G2, g being PVertexMapping of G2, G3
+  st f is directed & g is directed holds g*f is directed;
+
+theorem :: GLIB_011:13
+  for G1, G2, G3 being _Graph
+  for f being PVertexMapping of G1, G2, g being PVertexMapping of G2, G3
+  st f is Dcontinuous & g is Dcontinuous holds g*f is Dcontinuous;
+
+theorem :: GLIB_011:14
+  for G1, G2, G3 being _Graph
+  for f being PVertexMapping of G1, G2, g being PVertexMapping of G2, G3
+  st f is isomorphism & g is isomorphism holds g*f is isomorphism;
+
+theorem :: GLIB_011:15
+  for G1, G2, G3 being _Graph
+  for f being PVertexMapping of G1, G2, g being PVertexMapping of G2, G3
+  st f is Disomorphism & g is Disomorphism holds g*f is Disomorphism;
+
+begin :: The relation between Graph Mappings and Vertex Mappings
+
+theorem :: GLIB_011:16
+  for G1, G2 being _Graph, F being PGraphMapping of G1, G2
+  st for v,w being Vertex of G1 st v in dom F_V & w in dom F_V &
+    v,w are_adjacent ex e being object st e in dom F_E & e Joins v,w,G1
+  holds F_V is PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:17
+  for G1, G2 being _Graph, F being PGraphMapping of G1, G2
+  st dom F_E = the_Edges_of G1 holds F_V is PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:18
+  for G1, G2 being _Graph, F being PGraphMapping of G1, G2
+  st F is total holds F_V is PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:19
+  for G1, G2 being _Graph, F being directed PGraphMapping of G1, G2
+  st for v,w being object st v in dom F_V & w in dom F_V &
+      ex e being object st e DJoins v,w,G1
+    holds ex e being object st e in dom F_E & e DJoins v,w,G1
+  holds F_V is directed PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:20
+  for G1, G2 being _Graph, F being directed PGraphMapping of G1, G2
+  st dom F_E = the_Edges_of G1 holds F_V is directed PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:21
+  for G1, G2 being _Graph, F being directed PGraphMapping of G1, G2
+  st F is total holds F_V is directed PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:22
+  for G1, G2 being _Graph, F being semi-continuous PGraphMapping of G1, G2
+  st F_V is PVertexMapping of G1, G2 &
+    for v,w being Vertex of G1 st v in dom F_V & w in dom F_V &
+      F_V/.v, F_V/.w are_adjacent
+    ex e9 being object st e9 in rng F_E & e9 Joins F_V.v,F_V.w,G2
+  holds F_V is continuous PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:23
+  for G1, G2 being _Graph, F being semi-continuous PGraphMapping of G1, G2
+  st dom F_E = the_Edges_of G1 & rng F_E = the_Edges_of G2
+  holds F_V is continuous PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:24
+  for G1, G2 being _Graph, F being semi-continuous PGraphMapping of G1, G2
+  st F is total onto holds F_V is continuous PVertexMapping of G1, G2;
+
+theorem :: GLIB_011:25
+  for G1, G2 being _Graph, F being PGraphMapping of G1, G2
+  st F is isomorphism ex f being PVertexMapping of G1, G2
+    st F_V = f & f is isomorphism;
+
+theorem :: GLIB_011:26
+  for G1, G2 being _Graph, F being PGraphMapping of G1, G2
+  st F is Disomorphism ex f being directed PVertexMapping of G1, G2
+    st F_V = f & f is Disomorphism;
+
+:: Maybe add that f is continuous implies rng F_E = E2 /\ ... ?
+:: An example why this isn't always the case is the embedding of P_3 into K_3
+theorem :: GLIB_011:27
+  for G1, G2 being _Graph, f being PVertexMapping of G1, G2
+  for E1 being RepEdgeSelection of G1, E2 being RepEdgeSelection of G2
+  ex F being PGraphMapping of G1, G2
+  st F_V = f & dom F_E = E1 /\ G1.edgesBetween(dom f) &
+    rng F_E c= E2 /\ G2.edgesBetween(rng f);
+
+definition
+  let G1, G2 be non-multi _Graph, f be PVertexMapping of G1, G2;
+  func PVM2PGM(f) -> PGraphMapping of G1, G2 means
+:: GLIB_011:def 10
+
+  it _V = f & dom it _E = G1.edgesBetween(dom f) &
+    rng it _E c= G2.edgesBetween(rng f);
+end;
+
+theorem :: GLIB_011:28
+  for G1, G2 being non-multi _Graph
+  for f be PVertexMapping of G1, G2 holds (PVM2PGM(f))_V = f;
+
+registration
+  let G1, G2 be non-multi _Graph, f be PVertexMapping of G1, G2;
+  reduce (PVM2PGM f)_V to f;
+end;
+
+:: as above
+theorem :: GLIB_011:29
+  for G1, G2 being _Graph, f being directed PVertexMapping of G1, G2
+  for E1 being RepDEdgeSelection of G1, E2 being RepDEdgeSelection of G2
+  ex F being directed PGraphMapping of G1, G2
+  st F_V = f & dom F_E = E1 /\ G1.edgesBetween(dom f) &
+    rng F_E c= E2 /\ G2.edgesBetween(rng f);
+
+definition
+  let G1, G2 be non-Dmulti _Graph;
+  let f be directed PVertexMapping of G1, G2;
+  func DPVM2PGM(f) -> directed PGraphMapping of G1, G2 means
+:: GLIB_011:def 11
+
+  it _V = f & dom it _E = G1.edgesBetween(dom f) &
+    rng it _E c= G2.edgesBetween(rng f);
+end;
+
+theorem :: GLIB_011:30
+  for G1, G2 being non-Dmulti _Graph
+  for f be directed PVertexMapping of G1, G2 holds (DPVM2PGM(f))_V = f;
+
+registration
+  let G1, G2 be non-Dmulti _Graph;
+  let f be directed PVertexMapping of G1, G2;
+  reduce (DPVM2PGM f)_V to f;
+end;
+
+theorem :: GLIB_011:31
+  for G1, G2 being non-multi _Graph
+  for f being directed PVertexMapping of G1, G2
+  holds PVM2PGM(f) = DPVM2PGM(f);
+
+theorem :: GLIB_011:32
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is total holds PVM2PGM(f) is total;
+
+theorem :: GLIB_011:33
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is total holds DPVM2PGM(f) is total;
+
+theorem :: GLIB_011:34
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is one-to-one holds PVM2PGM(f) is one-to-one;
+
+theorem :: GLIB_011:35
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is one-to-one holds DPVM2PGM(f) is one-to-one;
+
+theorem :: GLIB_011:36
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is onto continuous holds PVM2PGM(f) is onto;
+
+theorem :: GLIB_011:37
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is onto Dcontinuous holds DPVM2PGM(f) is onto;
+
+theorem :: GLIB_011:38
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is continuous one-to-one holds PVM2PGM(f) is semi-continuous;
+
+theorem :: GLIB_011:39
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is continuous holds PVM2PGM(f) is continuous;
+
+theorem :: GLIB_011:40
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is one-to-one holds DPVM2PGM(f) is semi-Dcontinuous semi-continuous;
+
+theorem :: GLIB_011:41
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is Dcontinuous holds DPVM2PGM(f) is Dcontinuous;
+
+theorem :: GLIB_011:42
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is one-to-one holds PVM2PGM(f) is one-to-one;
+
+theorem :: GLIB_011:43
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is one-to-one holds DPVM2PGM(f) is one-to-one;
+
+theorem :: GLIB_011:44
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is total one-to-one holds PVM2PGM(f) is weak_SG-embedding;
+
+theorem :: GLIB_011:45
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is total one-to-one holds DPVM2PGM(f) is weak_SG-embedding;
+
+theorem :: GLIB_011:46
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is total one-to-one continuous holds PVM2PGM(f) is strong_SG-embedding;
+
+theorem :: GLIB_011:47
+  for G1, G2 being non-multi _Graph, f being PVertexMapping of G1, G2
+  st f is isomorphism holds PVM2PGM(f) is isomorphism;
+
+theorem :: GLIB_011:48
+  for G1, G2 being non-Dmulti _Graph, f being directed PVertexMapping of G1, G2
+  st f is Disomorphism holds DPVM2PGM(f) is Disomorphism;
+
+theorem :: GLIB_011:49
+  for G1, G2 being non-multi _Graph holds G2 is G1-isomorphic iff
+    ex f being PVertexMapping of G1, G2 st f is isomorphism;
+
+theorem :: GLIB_011:50
+  for G1, G2 being non-Dmulti _Graph holds G2 is G1-Disomorphic iff
+    ex f being directed PVertexMapping of G1, G2 st f is Disomorphism;

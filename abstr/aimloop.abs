@@ -1,0 +1,967 @@
+:: {AIM } Loops and the {AIM } Conjecture
+::  by Chad E. Brown and Karol P\kak
+:: 
+:: Received August 29, 2019
+:: Copyright (c) 2019-2020 Association of Mizar Users
+::           (Stowarzyszenie Uzytkownikow Mizara, Bialystok, Poland).
+:: This code can be distributed under the GNU General Public Licence
+:: version 3.0 or later, or the Creative Commons Attribution-ShareAlike
+:: License version 3.0 or later, subject to the binding interpretation
+:: detailed in file COPYING.interpretation.
+:: See COPYING.GPL and COPYING.CC-BY-SA for the full text of these
+:: licenses, or see http://www.gnu.org/licenses/gpl.html and
+:: http://creativecommons.org/licenses/by-sa/3.0/.
+
+environ
+
+ vocabularies STRUCT_0, ALGSTR_0, BINOP_1, SUBSET_1, SETFAM_1, ABIAN, KNASTER,
+      FUNCT_1, RELAT_1, XBOOLE_0, ALGSTR_1, ZFMISC_1, GROUP_6, GROUP_9,
+      MESFUNC1, VECTSP_1, TARSKI, REALSET1, COHSP_1, ARYTM_3, FUNCT_2,
+      PRE_TOPC, QC_LANG1, AUTGROUP, AIMLOOP, FUNCT_5, GROUP_1, FUNCOP_1;
+ notations TARSKI, XBOOLE_0, ZFMISC_1, SUBSET_1, REALSET1, RELAT_1, FUNCT_1,
+      PARTFUN1, FUNCT_2, BINOP_1, FUNCOP_1, STRUCT_0, ALGSTR_0, ALGSTR_1,
+      GROUP_1, VECTSP_1, ABIAN, KNASTER, FUNCT_5;
+ constructors BINOP_2, ALGSTR_1, REALSET1, VECTSP_2, GR_CY_1, RELSET_1, ABIAN,
+      KNASTER, FUNCT_5;
+ registrations XBOOLE_0, SUBSET_1, RELAT_1, FUNCT_1, KNASTER, PARTFUN1,
+      FUNCT_2, REALSET1, STRUCT_0, ALGSTR_0, ALGSTR_1, VECTSP_1, RELSET_1,
+      FUNCOP_1;
+ requirements BOOLE, SUBSET;
+
+
+begin :: Loops - Introduction
+
+::We define division operations on loops,
+::inner mappings T, L and R, commutators and associators
+::and basic attributes of interest. We also consider
+::subloops and homomorphisms. Particular subloops are
+::the nucleus and center of a loop and kernels of homomorphisms.
+
+reserve Q,Q1,Q2 for multLoop;
+reserve x,y,z,w,u,v for Element of Q;
+
+definition
+  let X be 1-sorted;
+  mode Permutation of X is Permutation of the carrier of X;
+  let Y be 1-sorted;
+  func Funcs(X,Y) -> set equals
+:: AIMLOOP:def 1
+    Funcs(the carrier of X,the carrier of Y);
+end;
+
+registration
+  let X,Y be 1-sorted;
+  cluster Funcs(X,Y) -> functional;
+end;
+
+definition
+  let Q be invertible left_mult-cancelable non empty multLoopStr,
+      x,y be Element of Q;
+  func x \ y -> Element of Q means
+:: AIMLOOP:def 2
+    x * it = y;
+end;
+
+definition
+  let Q be invertible right_mult-cancelable non empty multLoopStr,
+      x,y be Element of Q;
+  func x / y -> Element of Q means
+:: AIMLOOP:def 3
+    it * y = x;
+end;
+
+registration
+  let Q,x,y;
+  reduce x \ (x * y) to y;
+  reduce x * (x \ y) to y;
+  reduce (x * y) / y to x;
+  reduce (x / y) * y to x;
+end;
+
+definition
+  let Q be invertible left_mult-cancelable non empty multLoopStr,
+      u,x be Element of Q;
+  func T_map(u,x) -> Element of Q equals
+:: AIMLOOP:def 4
+    x \ (u * x);
+end;
+
+definition
+  let Q be invertible left_mult-cancelable non empty multLoopStr,
+      u,x,y be Element of Q;
+  func L_map(u,x,y) -> Element of Q equals
+:: AIMLOOP:def 5
+    (y * x) \ (y * (x * u));
+end;
+
+definition
+  let Q be invertible right_mult-cancelable non empty multLoopStr,
+    u,x,y be Element of Q;
+  func R_map(u,x,y) -> Element of Q equals
+:: AIMLOOP:def 6
+    ((u * x) * y) / (x * y);
+end;
+
+definition
+  let Q;
+  attr Q is satisfying_TT means
+:: AIMLOOP:def 7
+    for u,x,y be Element of Q holds
+      T_map(T_map(u,x),y) = T_map(T_map(u,y),x);
+  attr Q is satisfying_TL means
+:: AIMLOOP:def 8
+    for u,x,y,z be Element of Q holds
+      T_map(L_map(u,x,y),z) = L_map(T_map(u,z),x,y);
+  attr Q is satisfying_TR means
+:: AIMLOOP:def 9
+    for u,x,y,z be Element of Q holds
+      T_map(R_map(u,x,y),z) = R_map(T_map(u,z),x,y);
+  attr Q is satisfying_LR means
+:: AIMLOOP:def 10
+    for u,x,y,z,w be Element of Q holds
+      L_map(R_map(u,x,y),z,w) = R_map(L_map(u,z,w),x,y);
+  attr Q is satisfying_LL means
+:: AIMLOOP:def 11
+    for u,x,y,z,w be Element of Q holds
+      L_map(L_map(u,x,y),z,w) = L_map(L_map(u,z,w),x,y);
+  attr Q is satisfying_RR means
+:: AIMLOOP:def 12
+    for u,x,y,z,w be Element of Q holds
+      R_map(R_map(u,x,y),z,w) = R_map(R_map(u,z,w),x,y);
+end;
+
+definition
+  let Q,x,y;
+  func K_op(x,y) -> Element of Q equals
+:: AIMLOOP:def 13
+    (y * x) \ (x * y);
+end;
+
+definition
+  let Q,x,y,z;
+  func a_op(x,y,z) -> Element of Q equals
+:: AIMLOOP:def 14
+    (x * (y * z)) \ ((x * y) * z);
+end;
+
+definition
+  let Q be multLoop;
+  attr Q is satisfying_aa1 means
+:: AIMLOOP:def 15
+    for x,y,z,u,w be Element of Q holds a_op(a_op(x,y,z),u,w) = 1.Q;
+  attr Q is satisfying_aa2 means
+:: AIMLOOP:def 16
+    for x,y,z,u,w be Element of Q holds a_op(x,a_op(y,z,u),w) = 1.Q;
+  attr Q is satisfying_aa3 means
+:: AIMLOOP:def 17
+    for x,y,z,u,w be Element of Q holds a_op(x,y,a_op(z,u,w)) = 1.Q;
+  attr Q is satisfying_Ka means
+:: AIMLOOP:def 18
+    for x,y,z,u be Element of Q holds K_op(a_op(x,y,z),u) = 1.Q;
+  attr Q is satisfying_aK1 means
+:: AIMLOOP:def 19
+    for x,y,z,u be Element of Q holds a_op(K_op(x,y),z,u) = 1.Q;
+  attr Q is satisfying_aK2 means
+:: AIMLOOP:def 20
+    for x,y,z,u be Element of Q holds a_op(x,K_op(y,z),u) = 1.Q;
+  attr Q is satisfying_aK3 means
+:: AIMLOOP:def 21
+    for x,y,z,u be Element of Q holds a_op(x,y,K_op(z,u)) = 1.Q;
+end;
+
+registration
+  cluster strict satisfying_TT satisfying_TL satisfying_TR satisfying_LR
+                 satisfying_LL satisfying_RR
+                 satisfying_aa1 satisfying_aa2 satisfying_aa3
+                 satisfying_Ka satisfying_aK1 satisfying_aK2 satisfying_aK3
+    for multLoop;
+end;
+
+theorem :: AIMLOOP:1
+  x * y = u & x * z = u implies y = z;
+
+theorem :: AIMLOOP:2
+  y * x = u & z * x = u implies y = z;
+
+theorem :: AIMLOOP:3
+  x * y = x * z implies y = z;
+
+theorem :: AIMLOOP:4
+  y * x = z * x implies y = z;
+
+registration
+  let Q,x;
+  reduce 1.Q \ x to x;
+  reduce x / 1.Q to x;
+  let y;
+  reduce y / (x \ y) to x;
+  reduce (y / x) \ y to x;
+end;
+
+theorem :: AIMLOOP:5
+  x \ x = 1.Q;
+
+theorem :: AIMLOOP:6
+  x / x = 1.Q;
+
+theorem :: AIMLOOP:7
+  x \ y = 1.Q implies x = y;
+
+theorem :: AIMLOOP:8
+  x / y = 1.Q implies x = y;
+
+theorem :: AIMLOOP:9
+  a_op(x,y,z) = 1.Q implies x*(y*z) = (x*y)*z;
+
+theorem :: AIMLOOP:10
+  K_op(x,y) = 1.Q implies x*y = y*x;
+
+theorem :: AIMLOOP:11
+  a_op(x,y,z) = 1.Q implies L_map(z,y,x) = z;
+
+definition
+  let Q;
+  func Nucl_l Q -> Subset of Q means
+:: AIMLOOP:def 22
+    x in it iff for y,z holds (x * y) * z = x * (y * z);
+  func Nucl_m Q -> Subset of Q means
+:: AIMLOOP:def 23
+
+  y in it iff for x,z holds (x * y) * z = x * (y * z);
+  func Nucl_r Q -> Subset of Q means
+:: AIMLOOP:def 24
+
+  z in it iff for x,y holds (x * y) * z = x * (y * z);
+  func Comm Q -> Subset of Q means
+:: AIMLOOP:def 25
+
+  x in it iff for y holds x * y = y * x;
+end;
+
+definition
+  let Q;
+  func Nucl Q -> Subset of Q equals
+:: AIMLOOP:def 26
+    Nucl_l Q /\ Nucl_m Q /\ Nucl_r Q;
+end;
+
+theorem :: AIMLOOP:12
+  x in Nucl Q iff x in Nucl_l Q & x in Nucl_m Q & x in Nucl_r Q;
+
+definition
+  let Q;
+  func Cent Q -> Subset of Q equals
+:: AIMLOOP:def 27
+  Comm Q /\ Nucl Q;
+end;
+
+definition
+  let Q1,Q2 be multLoop;
+  let f be Function of Q1,Q2;
+  attr f is unity-preserving means
+:: AIMLOOP:def 28
+    f.(1.Q1) = 1.Q2;
+  attr f is quasi-homomorphic means
+:: AIMLOOP:def 29
+    for x,y being Element of Q1 holds f.(x * y) = (f.x) * (f.y);
+end;
+
+definition
+  let Q1,Q2 be multLoop;
+  let f be Function of Q1,Q2;
+  attr f is homomorphic means
+:: AIMLOOP:def 30
+  f is unity-preserving quasi-homomorphic;
+end;
+
+registration
+  let Q1,Q2 be multLoop;
+  cluster unity-preserving quasi-homomorphic -> homomorphic
+          for Function of Q1,Q2;
+  cluster homomorphic -> unity-preserving quasi-homomorphic
+          for Function of Q1,Q2;
+end;
+
+registration
+  let Q1,Q2 be multLoop;
+  cluster [#]Q1 --> 1.Q2 -> homomorphic for Function of Q1,Q2;
+end;
+
+registration
+  let Q1,Q2 be multLoop;
+  cluster homomorphic for Function of Q1,Q2;
+end;
+
+definition
+  let Q,Q2;
+  let f be homomorphic Function of Q,Q2;
+  func Ker f -> Subset of Q means
+:: AIMLOOP:def 31
+
+  x in it iff f.x = 1.Q2;
+end;
+
+theorem :: AIMLOOP:13
+  for f being homomorphic Function of Q1,Q2 holds
+  for x,y being Element of Q1 holds f.(x \ y) = f.x \ f.y;
+
+theorem :: AIMLOOP:14
+  for f being homomorphic Function of Q1,Q2 holds
+  for x,y being Element of Q1 holds f.(x / y) = f.x / f.y;
+
+theorem :: AIMLOOP:15
+  for f being homomorphic Function of Q1,Q2 st
+  (for y be Element of Q2 holds ex x being Element of Q1 st f.x = y)
+  &
+  (for x,y,z be Element of Q1 holds a_op(x,y,z) in Ker f)
+  holds
+  Q2 is associative;
+
+theorem :: AIMLOOP:16
+  for Q1 being
+    satisfying_aa1 satisfying_aa2 satisfying_aa3
+    satisfying_aK1 satisfying_aK2 satisfying_aK3 multLoop
+  holds
+  for Q2 be multLoop holds
+  for f being homomorphic Function of Q1,Q2 st
+  (for y be Element of Q2 holds ex x being Element of Q1 st f.x = y)
+  &
+  Nucl Q1 c= Ker f
+  holds
+  Q2 is commutative multGroup;
+
+theorem :: AIMLOOP:17
+  for Q1 being satisfying_aa1 satisfying_aa2 satisfying_aa3 satisfying_Ka
+    multLoop holds
+  for Q2 be multLoop holds
+  for f being homomorphic Function of Q1,Q2 st
+  (for y be Element of Q2 holds ex x being Element of Q1 st f.x = y)
+  &
+  Cent Q1 c= Ker f
+  holds
+  Q2 is multGroup;
+
+:: following GROUP_2
+definition
+  let Q be non empty multLoopStr;
+  mode SubLoopStr of Q -> non empty multLoopStr means
+:: AIMLOOP:def 32
+  the carrier of it c= the carrier of Q &
+  the multF of it = (the multF of Q)||the carrier of it &
+  the OneF of it = the OneF of Q;
+end;
+
+registration
+  let Q be multLoop;
+  cluster well-unital invertible cancelable non empty strict
+          for SubLoopStr of Q;
+end;
+
+definition
+  let Q be multLoop;
+  mode SubLoop of Q is well-unital invertible cancelable SubLoopStr of Q;
+end;
+
+definition
+  let Q be non empty multLoopStr;
+  let H be SubLoopStr of Q;
+  let A be Subset of H;
+  func @ A -> Subset of Q equals
+:: AIMLOOP:def 33
+A;
+end;
+
+definition
+  let Q;
+  let H1,H2 be Subset of Q;
+  func loopclose1(H1,H2) -> Subset of Q means
+:: AIMLOOP:def 34
+
+  x in it iff
+  x in H1 or x = 1.Q or
+  ex y,z st y in H2 & z in H2 & (x = y * z or x = y \ z or x = y / z);
+end;
+
+definition
+  let Q;
+  let H be Subset of Q;
+  func lp H -> strict SubLoop of Q means
+:: AIMLOOP:def 35
+
+  H c= [#]it &
+  for H2 be SubLoop of Q st H c= [#]H2 holds [#]it c= [#]H2;
+end;
+
+theorem :: AIMLOOP:18
+  for H being Subset of Q st
+  1.Q in H & (for x,y st x in H & y in H holds x * y in H)
+  & (for x,y st x in H & y in H holds x \ y in H)
+  & (for x,y st x in H & y in H holds x / y in H)
+  holds
+  [#]lp H = H;
+
+theorem :: AIMLOOP:19
+  for f being homomorphic Function of Q,Q2 holds
+  [#]lp (Ker f) = Ker f;
+
+theorem :: AIMLOOP:20
+  1.Q in Nucl_l Q;
+
+theorem :: AIMLOOP:21
+  1.Q in Nucl_m Q;
+
+theorem :: AIMLOOP:22
+  1.Q in Nucl_r Q;
+
+theorem :: AIMLOOP:23
+  1.Q in Nucl Q;
+
+registration
+  let Q;
+  cluster Nucl_l Q -> non empty;
+  cluster Nucl_m Q -> non empty;
+  cluster Nucl_r Q -> non empty;
+  cluster Nucl Q -> non empty;
+end;
+
+theorem :: AIMLOOP:24
+  x in Nucl Q & y in Nucl Q implies x * y in Nucl Q;
+
+theorem :: AIMLOOP:25
+  x in Nucl Q & y in Nucl Q implies x \ y in Nucl Q;
+
+theorem :: AIMLOOP:26
+  x in Nucl Q & y in Nucl Q implies x / y in Nucl Q;
+
+theorem :: AIMLOOP:27
+  [#]lp (Nucl Q) = Nucl Q;
+
+theorem :: AIMLOOP:28
+  [#]lp (Cent Q) = Cent Q;
+
+begin :: Multiplicative Mappings and Cosets
+
+::We now define a set Mlt Q of multiplicative mappings of Q
+::and cosets (mostly following Albert 1943 for cosets).
+
+definition
+  let X be functional set;
+  attr X is composition-closed means
+:: AIMLOOP:def 36
+
+  for f,g being Element of X st f in X & g in X holds f*g in X;
+  attr X is inverse-closed means
+:: AIMLOOP:def 37
+
+  for f being Element of X st f in X holds f" in X;
+end;
+
+registration
+  let A be set;
+  cluster {id A} -> composition-closed inverse-closed;
+end;
+
+registration
+  cluster composition-closed inverse-closed non empty for functional set;
+end;
+
+registration
+  let Q be multLoopStr;
+  cluster composition-closed inverse-closed non empty for Subset of Funcs(Q,Q);
+end;
+
+definition
+  let Q be non empty multLoopStr;
+  let H be Subset of Q;
+  let S be Subset of Funcs(Q,Q);
+  pred H left-right-mult-closed S means
+:: AIMLOOP:def 38
+  for u being Element of Q st u in H holds
+    (curry (the multF of Q)).u in S
+  &
+    (curry' (the multF of Q)).u in S;
+end;
+
+definition
+  let Q be non empty multLoopStr;
+  let H be Subset of Q;
+  let S be Subset of Funcs(Q,Q);
+  func MltClos1(H,S) -> Subset of Funcs(Q,Q) means
+:: AIMLOOP:def 39
+  for f being object holds
+  f in it iff
+    (ex u be Element of Q st u in H & f = (curry' (the multF of Q)).u)
+  or
+    (ex u be Element of Q st u in H & f = (curry (the multF of Q)).u)
+  or
+    (ex g,h be Permutation of Q st g in S & h in S & f = g*h)
+  or
+    (ex g be Permutation of Q st g in S & f = g");
+end;
+
+theorem :: AIMLOOP:29
+  for H being Subset of Q holds
+  for phi being Function of bool Funcs(Q,Q),bool Funcs(Q,Q)
+  st
+  for X being Subset of Funcs(Q,Q) holds phi.X = MltClos1(H,X)
+  holds
+  phi is c=-monotone;
+
+theorem :: AIMLOOP:30
+  for H being Subset of Q holds
+  for phi being Function of bool Funcs(Q,Q),bool Funcs(Q,Q) st
+    for X being Subset of Funcs(Q,Q) holds phi.X = MltClos1(H,X)
+  holds
+  for Y being Subset of Funcs(Q,Q) st phi.(Y) c= Y
+  holds
+  (for u being Element of Q st u in H holds (curry (the multF of Q)).u in Y)
+  &
+  (for u being Element of Q st u in H holds (curry' (the multF of Q)).u in Y);
+
+theorem :: AIMLOOP:31
+  for H being Subset of Q holds
+  for phi being Function of bool Funcs(Q,Q),bool Funcs(Q,Q)
+  st
+  for X being Subset of Funcs(Q,Q) holds phi.X = MltClos1(H,X)
+  holds
+  for Y being Subset of Funcs(Q,Q)
+  st
+  for S be Subset of Funcs(Q,Q) st phi.S c= S holds Y c= S
+  holds
+  for f being Element of Funcs(Q,Q) st
+  f in Y holds
+  f is Permutation of Q;
+
+theorem :: AIMLOOP:32
+  for H being Subset of Q holds
+  for phi being Function of bool Funcs(Q,Q),bool Funcs(Q,Q)
+  st
+  for X being Subset of Funcs(Q,Q) holds phi.X = MltClos1(H,X)
+  holds
+  for Y being Subset of Funcs(Q,Q)
+  st
+  Y is_a_fixpoint_of phi
+  & for S be Subset of Funcs(Q,Q) st phi.S c= S holds Y c= S
+  holds
+  Y is composition-closed
+  &
+  Y is inverse-closed;
+
+theorem :: AIMLOOP:33
+  (curry (the multF of Q)).u is Permutation of Q;
+
+theorem :: AIMLOOP:34
+  (curry' (the multF of Q)).u is Permutation of the carrier of Q;
+
+definition
+  let Q;
+  let H be Subset of Q;
+  func Mlt H -> composition-closed inverse-closed Subset of Funcs(Q, Q) means
+:: AIMLOOP:def 40
+
+  H left-right-mult-closed it
+  &
+  for X being composition-closed inverse-closed Subset of Funcs(Q,Q)
+  st H left-right-mult-closed X holds it c= X;
+end;
+
+theorem :: AIMLOOP:35
+  for H being Subset of Q holds
+  for u being Element of Q st u in H holds
+    (curry (the multF of Q)).u in Mlt H;
+
+theorem :: AIMLOOP:36
+  for H being Subset of Q holds
+  for u being Element of Q st u in H holds
+    (curry' (the multF of Q)).u in Mlt H;
+
+theorem :: AIMLOOP:37
+  for H being Subset of Q holds
+  for phi being Function of bool Funcs(Q,Q),bool Funcs(Q,Q)
+  st
+  for X being Subset of Funcs(Q,Q) holds phi.X = MltClos1(H,X)
+  holds
+  Mlt H is_a_fixpoint_of phi
+  &
+  for S be Subset of Funcs(Q,Q) st phi.S c= S holds Mlt H c= S;
+
+theorem :: AIMLOOP:38
+  for H being Subset of Q holds
+  for f being Element of Funcs(Q,Q) st
+  f in Mlt H holds f is Permutation of Q;
+
+definition
+  let Q;
+  let H be Subset of Q;
+  let x be Element of Q;
+  func x * H -> Subset of Q means
+:: AIMLOOP:def 41
+  y in it iff ex h be Permutation of Q st h in Mlt H & y = h.x;
+end;
+
+definition
+  let Q;
+  let H be SubLoop of Q;
+  let x be Element of Q;
+  func x * H -> Subset of Q equals
+:: AIMLOOP:def 42
+    x * (@ ([#] H));
+end;
+
+definition
+  let Q;
+  let N be SubLoop of Q;
+  func Cosets N -> Subset-Family of Q means
+:: AIMLOOP:def 43
+
+  for H be Subset of Q holds H in it iff ex x st H = x * N;
+end;
+
+registration
+  let Q;
+  let N be SubLoop of Q;
+  cluster Cosets N -> non empty;
+end;
+
+begin :: Normal Subloop
+
+::We define the notion of a normal subloop
+::and construct quotients by normal subloops.
+
+definition
+  let Q be multLoopStr;
+  let H1,H2 be Subset of Q;
+  func H1 * H2 -> Subset of Q means
+:: AIMLOOP:def 44
+
+  for x being Element of Q holds
+  x in it iff
+  ex y,z be Element of Q st y in H1 & z in H2 & x = y * z;
+  func H1 \ H2 -> Subset of Q means
+:: AIMLOOP:def 45
+  for x being Element of Q holds
+  x in it iff
+  ex y,z be Element of Q st y in H1 & z in H2 & x = y \ z;
+end;
+
+definition
+  let Q be multLoop;
+  let H be SubLoop of Q;
+  attr H is normal means
+:: AIMLOOP:def 46
+
+  for x,y being Element of Q holds
+  (x * H) * (y * H) = (x * y) * H
+  &
+  for z being Element of Q holds
+  ((x * H) * (y * H) = (x * H) * (z * H) implies (y * H) = (z * H))
+  &
+  ((y * H) * (x * H) = (z * H) * (x * H) implies (y * H) = (z * H));
+end;
+
+registration
+  let Q;
+  cluster normal for SubLoop of Q;
+end;
+
+definition
+  let Q;
+  let N be normal SubLoop of Q;
+  func SubLoop_As_Coset N -> Element of Cosets N equals
+:: AIMLOOP:def 47
+  1.Q * N;
+end;
+
+definition
+  let Q;
+  let N be normal SubLoop of Q;
+  func Coset_Loop_Op N -> BinOp of Cosets N
+  means
+:: AIMLOOP:def 48
+
+  for H1,H2 be Element of Cosets N holds
+  it.(H1,H2) = H1 * H2;
+end;
+
+definition
+  let Q;
+  let N be normal SubLoop of Q;
+  func Q _/_ N -> strict multLoopStr equals
+:: AIMLOOP:def 49
+    multLoopStr(#Cosets N,Coset_Loop_Op N,SubLoop_As_Coset N#);
+end;
+
+registration
+  let Q;
+  let N be normal SubLoop of Q;
+  cluster Q _/_ N -> non empty;
+end;
+
+registration
+  let Q;
+  let N be normal SubLoop of Q;
+  cluster Q _/_ N -> well-unital invertible cancelable;
+end;
+
+definition
+  let Q;
+  let N be normal SubLoop of Q;
+  func QuotientHom(Q,N) -> Function of Q,Q _/_ N means
+:: AIMLOOP:def 50
+
+  for x holds it.x = x * N;
+end;
+
+registration
+  let Q;
+  let N be normal SubLoop of Q;
+  cluster QuotientHom(Q,N) -> homomorphic;
+end;
+
+theorem :: AIMLOOP:39
+  for H being SubLoop of Q holds
+  for x,y holds
+  for x1,y1 being Element of H st
+  x = x1 & y = y1
+  holds
+  x * y = x1 * y1;
+
+theorem :: AIMLOOP:40
+  for H being SubLoop of Q holds
+  for x,y st x in the carrier of H & y in the carrier of H holds
+    x * y in the carrier of H;
+
+theorem :: AIMLOOP:41
+  for H being SubLoop of Q holds
+  for x,y holds
+  for x1,y1 being Element of H st
+  x = x1 & y = y1
+  holds
+  x \ y = x1 \ y1;
+
+theorem :: AIMLOOP:42
+  for H being SubLoop of Q holds
+  for x,y st x in the carrier of H & y in the carrier of H holds
+    x \ y in the carrier of H;
+
+theorem :: AIMLOOP:43
+  for H being SubLoop of Q holds
+  for x,y holds
+  for x1,y1 being Element of H st
+  x = x1 & y = y1
+  holds
+  x / y = x1 / y1;
+
+theorem :: AIMLOOP:44
+  for H being SubLoop of Q holds
+  for x,y st x in the carrier of H & y in the carrier of H holds
+    x / y in the carrier of H;
+
+scheme :: AIMLOOP:sch 1
+ MltInd {Q() -> multLoop, H() -> Subset of Q(), P[Function of Q(),Q()]}:
+  for f being Function of Q(),Q() st f in Mlt H() holds P[f]
+  provided
+   for u being Element of Q() st u in H() holds
+  for f being Function of Q(),Q() st for x being Element of Q() holds
+    f.x = x * u holds P[f]
+  and
+   for u being Element of Q() st u in H() holds
+  for f being Function of Q(),Q() st for x being Element of Q() holds
+    f.x = u * x holds P[f]
+  and
+   for g,h being Permutation of Q() st P[g] & P[h] holds P[g*h]
+  and
+   for g being Permutation of Q() st P[g] holds P[g"];
+
+theorem :: AIMLOOP:45
+  for N being SubLoop of Q holds
+  for f being Function of Q,Q st f in Mlt (@ ([#] N)) holds
+  for x holds x in (@ ([#] N)) iff f.x in (@ ([#] N));
+
+theorem :: AIMLOOP:46
+  for N being normal SubLoop of Q holds
+  the carrier of N = 1.Q * N;
+
+
+theorem :: AIMLOOP:47
+  for N being normal SubLoop of Q holds
+  Ker (QuotientHom(Q,N)) = @ ([#] N);
+
+theorem :: AIMLOOP:48
+  for Q2 being multLoop holds
+  for f being homomorphic Function of Q,Q2 holds
+  for h being Function of Q,Q st h in Mlt (Ker f) holds
+  f*h = f;
+
+theorem :: AIMLOOP:49
+  for Q2 being multLoop holds
+  for f being homomorphic Function of Q,Q2 holds
+  for x,y holds
+  y in x * Ker f iff f.x = f.y;
+
+theorem :: AIMLOOP:50
+  for Q2 being multLoop holds
+  for f being homomorphic Function of Q,Q2 holds
+  for x,y holds
+  y in x * lp (Ker f) iff f.x = f.y;
+
+theorem :: AIMLOOP:51
+  for Q2 being multLoop holds
+  for f being homomorphic Function of Q,Q2 holds
+  for x,y holds
+  x * lp (Ker f) = y * lp (Ker f) iff f.x = f.y;
+
+theorem :: AIMLOOP:52
+  for Q2 being multLoop holds
+  for f being homomorphic Function of Q,Q2 holds
+  lp (Ker f) is normal;
+
+theorem :: AIMLOOP:53
+  1.Q in [#] (lp (Cent Q)) & 1.Q in Cent Q;
+
+theorem :: AIMLOOP:54
+  for f being Function of Q,Q st f in Mlt (Cent Q) holds
+  ex z st z in Cent Q & for x holds f.x = x * z;
+
+theorem :: AIMLOOP:55
+  y in x * lp (Cent Q) iff ex z st z in Cent Q & y = x * z;
+
+theorem :: AIMLOOP:56
+  x * lp (Cent Q) = y * lp (Cent Q) iff ex z st z in Cent Q & y = x * z;
+
+theorem :: AIMLOOP:57
+  lp (Cent Q) is normal;
+
+begin :: AIM Conjecture
+
+::We define the set InnAut of inner mappings of Q,
+::define the notion of an AIM loop and relate this to
+::the conditions on T, L, and R defined by satisfies_TT, etc.
+::For AIM loops we will prove the nucleus and the center are normal.
+
+definition
+  let Q be multLoop;
+  func InnAut Q -> Subset of Funcs(Q,Q) means
+:: AIMLOOP:def 51
+
+  for f being object holds
+  f in it iff
+  ex g being Function of Q,Q st
+  f = g & g in Mlt ([#] Q) & g.(1.Q) = 1.Q;
+end;
+
+registration
+  let Q be multLoop;
+  cluster InnAut Q -> non empty composition-closed inverse-closed;
+  end;
+
+theorem :: AIMLOOP:58
+  for f being Function of Q,Q holds
+  f in InnAut Q iff f in Mlt ([#] Q) & f.(1.Q) = 1.Q;
+
+definition
+  let Q be multLoop;
+  attr Q is AIM means
+:: AIMLOOP:def 52
+    for f,g being Function of Q,Q st f in InnAut Q & g in InnAut Q holds
+      f*g = g*f;
+end;
+
+definition
+  let Q,x;
+  func T_MAP(x) -> Function of Q,Q means
+:: AIMLOOP:def 53
+  for u holds it.u = T_map(u,x);
+end;
+
+theorem :: AIMLOOP:59
+  T_MAP(x) in InnAut Q;
+
+definition
+  let Q,x,y;
+  func L_MAP(x,y) -> Function of Q,Q means
+:: AIMLOOP:def 54
+  for u holds it.u = L_map(u,x,y);
+end;
+
+theorem :: AIMLOOP:60
+  L_MAP(x,y) in InnAut Q;
+
+definition
+  let Q,x,y;
+  func R_MAP(x,y) -> Function of Q,Q means
+:: AIMLOOP:def 55
+  for u holds it.u = R_map(u,x,y);
+end;
+
+theorem :: AIMLOOP:61
+  R_MAP(x,y) in InnAut Q;
+
+registration
+  cluster Trivial-multLoopStr -> AIM;
+end;
+
+registration
+  cluster non empty strict AIM for multLoop;
+end;
+
+registration
+  cluster -> satisfying_TT satisfying_TL satisfying_TR satisfying_LR
+             satisfying_LL satisfying_RR for AIM multLoop;
+end;
+
+theorem :: AIMLOOP:62
+  for f being Function of Q,Q st f in Mlt (Nucl Q) holds
+  ex u,v st u in Nucl Q & v in Nucl Q & for x holds f.x = u * (x * v);
+
+theorem :: AIMLOOP:63
+  y in x * lp (Nucl Q) iff
+  ex u,v st u in Nucl Q & v in Nucl Q & y = u * (x * v);
+
+theorem :: AIMLOOP:64
+  x * lp (Nucl Q) = y * lp (Nucl Q) iff
+    ex u,v st u in Nucl Q & v in Nucl Q & y = u * (x * v);
+
+:: Suggested result and proof by Kinyon Sep 10 2018
+:: as crucial part of proving the nucleus of an AIM loop
+:: is normal.
+theorem :: AIMLOOP:65
+  for Q being AIM multLoop holds
+  for x,u being Element of Q holds
+  u in Nucl Q implies T_map(u,x) in Nucl Q;
+
+theorem :: AIMLOOP:66
+  for Q being AIM multLoop holds
+  for x,u being Element of Q holds
+    u in Nucl Q implies (x * u) / x in Nucl Q;
+
+:: This proof was difficult and required a hint from Kinyon.
+:: Kinyon's hint was essentially the proof of NuclT above.
+theorem :: AIMLOOP:67
+  Q is AIM implies lp (Nucl Q) is normal;
+
+registration
+  let Q be AIM multLoop;
+  cluster lp (Nucl Q) -> normal;
+end;
+
+registration
+  let Q be multLoop;
+  cluster lp (Cent Q) -> normal;
+end;
+
+::$N Main Theorem The AIM Conjecture follows
+::from knowing every AIM loop satisfies
+::aa1, aa2, aa3, Ka, aK1, aK2 and aK3.
+::This theorem justifies using first-order theorem provers
+::to try to prove the AIM Conjecture.
+theorem :: AIMLOOP:68
+  (for Q being multLoop st Q is satisfying_TT satisfying_TL satisfying_TR
+     satisfying_LR satisfying_LL satisfying_RR
+  holds Q is satisfying_aa1 satisfying_aa2 satisfying_aa3
+    satisfying_Ka satisfying_aK1 satisfying_aK2 satisfying_aK3)
+  implies
+  for Q being AIM multLoop holds
+  Q _/_ (lp (Nucl Q)) is commutative multGroup
+  &
+  Q _/_ (lp (Cent Q)) is multGroup;
