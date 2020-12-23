@@ -2,176 +2,195 @@ import os
 from emparser.preprocess import Lexer
 import re
 import pickle
+from pathlib import Path
+import glob
+from collections import defaultdict
 
-DATA_DIR = '/mnt/c/emparser/build/lib.linux-x86_64-3.6/emparser/data' # 適宜変更
-MML_VCT = os.path.join(DATA_DIR, 'mml.vct')
 
-lexer = Lexer()
-lexer.load_symbol_dict(MML_VCT)
-lexer.build_len2symbol()
+def is_variable(word):
+    # 変数ならTrueを返し、そうでないならFalseを返す関数
+    reserved_words = ["according", "aggregate", "all", "and", "antonym", "are", "as", "associativity", "assume", "asymmetry", "attr",
+                      "be", "begin", "being", "by", "canceled", "case", "cases", "cluster", "coherence", "commutativity", "compatibility", 
+                      "connectedness", "consider", "consistency", "constructors", "contradiction", "correctness", "def", "deffunc", "define",
+                      "definition", "definitions", "defpred", "do", "does", "end", "environ", "equals", "ex", "exactly", "existence", "for",
+                      "from", "func", "given", "hence", "hereby", "holds", "idempotence", "identify", "if", "iff", "implies", "involutiveness",
+                      "irreflexivity", "is", "it", "let", "means", "mode", "non", "not", "notation", "notations", "now", "of", "or", "otherwise",
+                      "over", "per", "pred", "prefix", "projectivity", "proof", "provided", "qua", "reconsider", "reduce", "reducibility",
+                      "redefine", "reflexivity", "registration", "registrations", "requirements", "reserve", "sch", "scheme", "schemes",
+                      "section", "selector", "set", "sethood", "st", "struct", "such", "suppose", "symmetry", "synonym", "take", "that", "the", 
+                      "then", "theorem", "theorems", "thesis", "thus", "to", "transitivity", "uniqueness", "vocabularies", "when", "where",
+                      "with", "wrt", ",", ";", ":", "(", ")", "[", "]", "{", "}", "=", "&", "->", ".=", "...", "$1", "$2", "$3", "$4", "$5",
+                      "$6", "&7", "$8", "$9", "$10", "(#", "#)"]
 
-path = "./abstr"
-files = os.listdir(path)
-files_file = [f for f in files if os.path.isfile(os.path.join(path, f))]
-files_file.sort()
+    if word in reserved_words or word.isdecimal() or "__" in word and "_" in word.replace("__", ""):
+        return False
+    else:
+        return True
 
-variable_check = []
-with open("symbol.txt", "r") as f:
-    while True:
-        l = f.readline()
-        if not l:
-            break 
-        variable_check.append(re.sub("[\n]","",l))
 
-variable_number = []
-variable_type = 0
+def create_abs_dictionary():
+    # (definition or theorem)  (行数)  (ファイル名)  (ラベル名)       (テキスト)
+    # definition               51      abcmiz_0.abs  BCMIZ_0:def 1   let T be RelStr;   attr T is Noetherian means   the InternalRel of T is co-well_founded; 
 
-for number_files_file in range(len(files_file)):
-    with open("dictionary_abs.txt", "a") as file_dictionary_abs:
-        with open("./abstr/"+files_file[number_files_file], "r") as name_file:
-            definition_flag = 0
-            theorem_flag = 0
-            count_line = 0
-            count_definition = 0
-            definition_count_line = 0
-            theorem_count_line = 0
-            theorem_count_comment = 0
-            common_definition = []
-            value_definition = []
-            while True:
-                count_line += 1   
-                read_name_file = name_file.readline()
-                if not read_name_file:
-                    break
-                read_name_file_split = read_name_file.split()
-                for number_read_name_file in range(len(read_name_file_split)):
-                    if read_name_file_split[number_read_name_file] == "::" and number_read_name_file==0 and definition_flag == 0 and theorem_flag == 0:
-                        break
-                    elif read_name_file_split[number_read_name_file] == "theorem" and number_read_name_file == 0:
-                        theorem_flag = 1
-                        file_dictionary_abs.write("theorem ")
-                        file_dictionary_abs.write(str(count_line))
-                        file_dictionary_abs.write(" ")
-                        file_dictionary_abs.write(str(files_file[number_files_file]))
-                        file_dictionary_abs.write(" ")
-                        theorem_count_line = count_line
-                    elif theorem_flag == 1:
-                        if read_name_file_split[number_read_name_file] == "::":
-                            if theorem_count_line != count_line:
+    cwd = os.getcwd()
+    path = "./abstr"
+    os.chdir(path)
+    files = sorted(glob.glob("*.abs"))
+    os.chdir(cwd)
+
+    with open ("abs_dictionary.txt", "w") as file_abs_dictionary:
+        for file in files:
+            with open("./abstr/"+file, "r") as f:
+                lines = f.readlines()
+
+                is_definition_block = 0 # definitionのブロック内にあるかどうか  definition ~~ end; までの部分
+
+                is_theorem = 0 # theoremの中にあるかどうか　theorem ~~ ; までの部分
+
+                is_definition = 0 # definitionのラベル内かどうか
+                
+                common_definition_statement = [] # 変数定義などのdefinitionの共通部分の要素
+
+                indivisual_definition_statement = [] # definitionのラベルごとの要素
+
+                for line_no, line in enumerate(lines):
+
+                    line = line.strip() # 改行文字を除くため
+                    words = line.split()
+
+                    for word_no, word in enumerate(words): 
+                        if word == "::" and word_no == 0 and is_definition_block == 0 and is_theorem == 0:
+                            break
+
+                        elif word == "theorem" and word_no == 0:
+                            is_theorem = 1
+                            file_abs_dictionary.write(f"theorem {line_no} {file} {line.split('::')[1]}")
+                            break
+
+                        elif is_theorem == 1:
+                            # コメントの場合は無視
+                            if word == "::":
                                 break
-                            else:
-                                theorem_count_comment += 1
-                            continue
-                        if theorem_count_comment >= 2 and theorem_count_line == count_line:
-                            theorem_count_comment = 0
-                            break
-                        if theorem_count_line != count_line:
-                            file_dictionary_abs.write(" ")
-                        file_dictionary_abs.write(read_name_file_split[number_read_name_file])
-                        if theorem_count_line != count_line:
-                            file_dictionary_abs.write(" ")
-                        if ";" in read_name_file_split[number_read_name_file]:
-                            file_dictionary_abs.write("\n")
-                            theorem_flag = 0
-                            theorem_count_comment = 0
-                    elif read_name_file_split[number_read_name_file] == "definition" and number_read_name_file == 0:
-                        definition_flag = 1
-                    elif definition_flag == 1:
-                        if read_name_file_split[number_read_name_file] == "end;":
-                            definition_flag = 0
-                            count_definition = 0
-                            common_definition = []
-                            value_definition = []
-                            break
-                        if read_name_file_split[number_read_name_file] == ":::":
-                            break
-                        if count_definition == 0 and read_name_file_split[number_read_name_file] != "::" and read_name_file_split[number_read_name_file] != "":
-                            common_definition.append(read_name_file[:-1])
-                            value_definition = []
-                            break
-                        elif count_definition == 1 and read_name_file[-2] != ";" and read_name_file != "":
-                            value_definition.append(read_name_file[:-1])
-                            break
-                        elif read_name_file_split[number_read_name_file] == "::" and count_definition == 0 and read_name_file != "":
-                            count_definition = 1
-                            definition_count_line = count_line
-                            value_definition.append(read_name_file[:-1].split("::")[1])
-                            if len(common_definition) >= 1:
-                                value_definition.append(common_definition.pop())
-                            break
-                        elif read_name_file[-2] == ";"  and count_definition == 1 and read_name_file != "":
-                            value_definition.append(read_name_file[:-1])
-                            count_definition = 0
-                            file_dictionary_abs.write("definition ")
-                            file_dictionary_abs.write(str(definition_count_line))
-                            file_dictionary_abs.write(" ")
-                            file_dictionary_abs.write(str(files_file[number_files_file]))
-                            file_dictionary_abs.write(" ")
-                            file_dictionary_abs.write(value_definition[0][2:])
-                            file_dictionary_abs.write(" ")
-                            definition_count_line = count_line
-                            for i in range(len(common_definition)):
-                                file_dictionary_abs.write(common_definition[i])
-                                file_dictionary_abs.write(" ")
-                            for i in range(1,len(value_definition)):
-                                file_dictionary_abs.write(value_definition[i])
-                                file_dictionary_abs.write(" ")
-                            file_dictionary_abs.write("\n")
-                            break
+                            
+                            file_abs_dictionary.write(f" {word}")
 
-with open("parsed_abs.txt", "w") as file_parsed_abs:
-    with open("dictionary_abs.txt", "r") as file_dictionary_abs:
-         while True:   
-            line = file_dictionary_abs.readline()
-            line = line.split()
-            if not line:
-                break
-            if line[0] == "theorem":
-                lines = ("begin\n " + str(line[0]) + "\n " + " ".join(line[4::])).split(" ")
-                env_lines, text_proper_lines = lexer.separate_env_and_text_proper(lines)
-                env_lines = lexer.remove_comment(env_lines)
-                text_proper_lines = lexer.remove_comment(text_proper_lines)
-                tokenized_lines, position_map = lexer.lex(text_proper_lines)
-                for i in range(2, len(tokenized_lines)):
-                    tokenized_lines_split = tokenized_lines[i].split(" ")
-                    for j in range(len(tokenized_lines_split)):
-                        tokenized_lines_split[j] = re.sub("__[^_]+_","",tokenized_lines_split[j])
-                        if tokenized_lines_split[j] not in variable_check:
-                            variable_number.append(tokenized_lines_split[j])
-                            tokenized_lines_split[j] = "___"
-                        file_parsed_abs.write(tokenized_lines_split[j] + " ")
-                variable_type = len(set(variable_number))
-                file_parsed_abs.write(str(len(variable_number)) + " " + str(variable_type))
-                file_parsed_abs.write("\n")
-                variable_number = []
-            elif line[0] == "definition":
-                lines = ("begin\n " + str(line[0]) + "\n " + " ".join(line[5::])).split(" ")
-                env_lines, text_proper_lines = lexer.separate_env_and_text_proper(lines)
-                env_lines = lexer.remove_comment(env_lines)
-                text_proper_lines = lexer.remove_comment(text_proper_lines)
-                tokenized_lines, position_map = lexer.lex(text_proper_lines)
-                for i in range(2, len(tokenized_lines)):
-                    tokenized_lines_split = tokenized_lines[i].split(" ")
-                    for j in range(len(tokenized_lines_split)):
-                        tokenized_lines_split[j] = re.sub("__[^_]+_","",tokenized_lines_split[j])
-                        if tokenized_lines_split[j] not in variable_check:
-                            variable_number.append(tokenized_lines_split[j])
-                            tokenized_lines_split[j] = "___"
-                        file_parsed_abs.write(tokenized_lines_split[j] + " ")
-                variable_type = len(set(variable_number))
-                file_parsed_abs.write(str(len(variable_number)) + " " + str(variable_type))
-                file_parsed_abs.write("\n")
-                variable_number = []
+                            # ";"はtheoremの最後の文字なため、改行しtheoremに関する変数を初期化している
+                            if ";" in word:
+                                file_abs_dictionary.write("\n")
+                                is_theorem = 0
+                                theorem_line_no = 0
+                                is_comment = 0
 
-with open("dictionary_abs.txt", "rb") as f:
-    tell = []
-    tell_append = tell.append
-    tell_append(0)
-    with open("tell.pkl", "wb") as fi:
-        while True:
-            a = f.readline()
-            if not a:
-                break
-            tell_append(f.tell())
-            
-        pickle.dump(tell, fi)
+                        elif word == "definition" and word_no == 0:
+                            is_definition_block = 1
+
+                        elif is_definition_block == 1:
+                            
+                            if "end" in line and ";" in line:
+                                is_definition_block = 0
+                                is_definition = 0
+                                common_definition_statement = []
+                                indivisual_definition_statement = []
+                                break
+                            
+                            elif word == ":::":
+                                break
+                            
+                            elif is_definition == 0 and word != "::":
+                                # definition let ~
+                                # 等の場合があるためdefinitionが含まれていたら除く
+                                common_definition_statement.append(line.replace("definition", ""))
+                                break
+                            
+                            # definition内かつ最終行でない場合のとき
+                            elif is_definition == 1 and ";" not in line:
+                                indivisual_definition_statement.append(line)
+                                break
+                            
+                            # definitionのラベルがある場合
+                            elif word == "::" and is_definition == 0:
+                                is_definition = 1
+                                # line.split('::')[1].replace(' ','')はラベル名、のちの処理を簡略するためラベル名にある" "を除いている
+                                # 例
+                                # ABCMIZ_0:def 1 -> ABCMIZ_0:def1
+                                file_abs_dictionary.write(f"definition {line_no} {file} {line.split('::')[1].replace(' ','')} ")
+                                if len(common_definition_statement) >= 1:
+                                    indivisual_definition_statement.append(common_definition_statement.pop())
+                                break
+
+                            # definitionの最後
+                            elif line[-1] == ";" and is_definition == 1:
+                                indivisual_definition_statement.append(line)
+                                is_definition = 0
+                                file_abs_dictionary.write(f"{' '.join(common_definition_statement)} {' '.join(indivisual_definition_statement)}\n")
+                                indivisual_definition_statement = []
+                                break
+
+def processing_variables_with_emparser(line):
+    """
+    変数を___に変更し、最期に変数の種類と数を入れている
+    例
+    line
+    let T be RelStr;   attr T is Noetherian means   the InternalRel of T is co-well_founded; 
+    return
+    let ___ be RelStr ; attr ___ is Noetherian means the InternalRel of ___ is co-well_founded ; 1 3 
+    """
+    DATA_DIR = Path("emparser/data")
+    ABS_DIR = os.path.join(DATA_DIR, 'mml.vct')
+    lexer = Lexer()
+    lexer.load_symbol_dict(ABS_DIR)
+    lexer.build_len2symbol()
+
+    variable2appearance = defaultdict(int)
+
+    lines = ("begin\n " + " ".join(line)).split(" ")
+    env_lines, text_proper_lines = lexer.separate_env_and_text_proper(lines)
+    env_lines = lexer.remove_comment(env_lines)
+    text_proper_lines = lexer.remove_comment(text_proper_lines)
+    tokenized_lines, position_map = lexer.lex(text_proper_lines)
+
+    for i in range(1, len(tokenized_lines)): # tokenized_linesの先頭はbeginのため
+        if is_variable(tokenized_lines[i]): # 変数の場合
+            variable2appearance[tokenized_lines[i]] += 1
+            tokenized_line[i] = "___"
+        tokenized_line[i] = re.sub("__[^_]+_", "", tokenized_lines[i])
+
+    return f"{' '.join(tokenized_lines[1:])} {len(variable2appearance)} {sum(variable2appearance.values())}"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+
+def create_document_vectors():
+    """
+    abs_dictionary.txt からdocument_vectors.txtを作成する関数
+    変数を___に変更し、最期に変数の種類と数を入れている
+    例
+    abs_dictionary.txt
+    definition 51 abcmiz_0.abs BCMIZ_0:def 1   let T be RelStr;   attr T is Noetherian means   the InternalRel of T is co-well_founded; 
+        
+    document_vectors.txt
+    let ___ be RelStr ; attr ___ is Noetherian means the InternalRel of ___ is co-well_founded ; 1 3 
+    """
+
+    with open("document_vectors.txt", "w") as file_document_vectors:
+        with open("abs_dictionary.txt", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.replace(",", " ")
+                line = line.replace(";", "")
+                line = line.split()
+                file_document_vectors.write(f"{processing_variables_with_emparser(line[4:])} \n")
+
+def save_abs_dictionary_by_byte():
+    """
+    abs_dictionary.txtを行ごとにバイト数を求め、tell.pklに保存する関数
+    """
+    with open("abs_dictionary.txt", "rb") as f:
+        tell = []
+        tell_append = tell.append
+        tell_append(0)
+        with open("tell.pkl", "wb") as fi:
+            while True:
+                a = f.readline()
+                if not a:
+                    break
+                tell_append(f.tell())
+
+            pickle.dump(tell, fi)
