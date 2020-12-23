@@ -152,8 +152,8 @@ def processing_variables_with_emparser(line):
     for i in range(1, len(tokenized_lines)): # tokenized_linesの先頭はbeginのため
         if is_variable(tokenized_lines[i]): # 変数の場合
             variable2appearance[tokenized_lines[i]] += 1
-            tokenized_line[i] = "___"
-        tokenized_line[i] = re.sub("__[^_]+_", "", tokenized_lines[i])
+            tokenized_lines[i] = "___"
+        tokenized_lines[i] = re.sub("__[^_]+_", "", tokenized_lines[i])
 
     return f"{' '.join(tokenized_lines[1:])} {len(variable2appearance)} {sum(variable2appearance.values())}"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
