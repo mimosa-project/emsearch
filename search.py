@@ -33,7 +33,7 @@ def search(search_word, count_top):
         search_result = {}
         with open("abs_dictionary.txt", "rb") as f:
             f.seek(tell[idx[0]])
-            doc_list = f.read(tell[idx[0]+1]-tell[idx[0]]-2).decode('utf-8').split() # -2は改行文字を除くため
+            doc_list = f.read(tell[idx[0]+1]-tell[idx[0]]).decode('utf-8').split()
 
         # doc_list[0] : theorem or definition
         #         [1] : line
