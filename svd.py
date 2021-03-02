@@ -32,3 +32,4 @@ def singular_value_analysis(input_txt):
     # 類似度を求めるためのindexの作成
     index = similarities.MatrixSimilarity(lsi_corpus)
     index.save('lsi_index.index')
+    

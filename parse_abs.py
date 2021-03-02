@@ -6,23 +6,27 @@ from pathlib import Path
 import glob
 from collections import defaultdict
 
+DATA_DIR = Path("emparser/data")
+ABS_DIR = os.path.join(DATA_DIR, 'mml.vct')
+lexer = Lexer()
+lexer.load_symbol_dict(ABS_DIR)
+lexer.build_len2symbol()
+RESERVED_WORDS = ["according", "aggregate", "all", "and", "antonym", "are", "as", "associativity", "assume", "asymmetry", "attr",
+                  "be", "begin", "being", "by", "canceled", "case", "cases", "cluster", "coherence", "commutativity", "compatibility", 
+                  "connectedness", "consider", "consistency", "constructors", "contradiction", "correctness", "def", "deffunc", "define",
+                  "definition", "definitions", "defpred", "do", "does", "end", "environ", "equals", "ex", "exactly", "existence", "for",
+                  "from", "func", "given", "hence", "hereby", "holds", "idempotence", "identify", "if", "iff", "implies", "involutiveness",
+                  "irreflexivity", "is", "it", "let", "means", "mode", "non", "not", "notation", "notations", "now", "of", "or", "otherwise",
+                  "over", "per", "pred", "prefix", "projectivity", "proof", "provided", "qua", "reconsider", "reduce", "reducibility",
+                  "redefine", "reflexivity", "registration", "registrations", "requirements", "reserve", "sch", "scheme", "schemes",
+                  "section", "selector", "set", "sethood", "st", "struct", "such", "suppose", "symmetry", "synonym", "take", "that", "the", 
+                  "then", "theorem", "theorems", "thesis", "thus", "to", "transitivity", "uniqueness", "vocabularies", "when", "where",
+                  "with", "wrt", ",", ";", ":", "(", ")", "[", "]", "{", "}", "=", "&", "->", ".=", "...", "$1", "$2", "$3", "$4", "$5",
+                  "$6", "&7", "$8", "$9", "$10", "(#", "#)"]
 
 def is_variable(word):
     # 変数ならTrueを返し、そうでないならFalseを返す関数
-    reserved_words = ["according", "aggregate", "all", "and", "antonym", "are", "as", "associativity", "assume", "asymmetry", "attr",
-                      "be", "begin", "being", "by", "canceled", "case", "cases", "cluster", "coherence", "commutativity", "compatibility", 
-                      "connectedness", "consider", "consistency", "constructors", "contradiction", "correctness", "def", "deffunc", "define",
-                      "definition", "definitions", "defpred", "do", "does", "end", "environ", "equals", "ex", "exactly", "existence", "for",
-                      "from", "func", "given", "hence", "hereby", "holds", "idempotence", "identify", "if", "iff", "implies", "involutiveness",
-                      "irreflexivity", "is", "it", "let", "means", "mode", "non", "not", "notation", "notations", "now", "of", "or", "otherwise",
-                      "over", "per", "pred", "prefix", "projectivity", "proof", "provided", "qua", "reconsider", "reduce", "reducibility",
-                      "redefine", "reflexivity", "registration", "registrations", "requirements", "reserve", "sch", "scheme", "schemes",
-                      "section", "selector", "set", "sethood", "st", "struct", "such", "suppose", "symmetry", "synonym", "take", "that", "the", 
-                      "then", "theorem", "theorems", "thesis", "thus", "to", "transitivity", "uniqueness", "vocabularies", "when", "where",
-                      "with", "wrt", ",", ";", ":", "(", ")", "[", "]", "{", "}", "=", "&", "->", ".=", "...", "$1", "$2", "$3", "$4", "$5",
-                      "$6", "&7", "$8", "$9", "$10", "(#", "#)"]
-
-    if word in reserved_words or word.isdecimal() or "__" in word and "_" in word.replace("__", ""):
+    if word in RESERVED_WORDS or word.isdecimal() or "__" in word and "_" in word.replace("__", ""):
         return False
     else:
         return True
@@ -33,25 +37,36 @@ def create_abs_dictionary():
     # definition               51      abcmiz_0.abs  BCMIZ_0:def 1   let T be RelStr;   attr T is Noetherian means   the InternalRel of T is co-well_founded; 
 
     cwd = os.getcwd()
-    path = "./abstr"
-    os.chdir(path)
-    files = sorted(glob.glob("*.abs"))
-    os.chdir(cwd)
+    try:
+        path = "./abstr"
+        os.chdir(path)
+        abs_files = sorted(glob.glob("*.abs"))
+    finally:
+        os.chdir(cwd)
 
-    with open ("abs_dictionary.txt", "w") as file_abs_dictionary:
-        for file in files:
-            with open("./abstr/"+file, "r") as f:
+    with open ("abs_dictionary.txt", "w") as abs_dictionary_file:
+        for file in abs_files:
+            with open(os.path.join("./abstr/", file), "r") as f:
                 lines = f.readlines()
 
-                is_definition_block = 0 # definitionのブロック内にあるかどうか  definition ~~ end; までの部分
+                is_definition_block = False # definitionのブロック内にあるかどうか  definition ~~ end; までの部分
 
-                is_theorem = 0 # theoremの中にあるかどうか　theorem ~~ ; までの部分
+                is_theorem = False # theoremの中にあるかどうか　theorem ~~ ; までの部分
 
-                is_definition = 0 # definitionのラベル内かどうか
+                is_definition = False # definitionのラベル内かどうか
                 
                 common_definition_statement = [] # 変数定義などのdefinitionの共通部分の要素
 
                 indivisual_definition_statement = [] # definitionのラベルごとの要素
+
+                # abs_dictionaryに保存する情報
+                item = {
+                    "title": "",
+                    "line_no": "",
+                    "filename": file,
+                    "label": "",
+                    "text": ""
+                }
 
                 for line_no, line in enumerate(lines):
 
@@ -59,36 +74,48 @@ def create_abs_dictionary():
                     words = line.split()
 
                     for word_no, word in enumerate(words): 
-                        if word == "::" and word_no == 0 and is_definition_block == 0 and is_theorem == 0:
+                        if word == "::" and word_no == False and is_definition_block == False and is_theorem == False:
                             break
 
                         elif word == "theorem" and word_no == 0:
-                            is_theorem = 1
-                            file_abs_dictionary.write(f"theorem {line_no} {file} {line.split('::')[1]}")
+                            is_theorem = True
+                            item["title"] = "theorem"
+                            item["line_no"] = line_no
+                            item["label"] = line.split('::')[1]
+                            if bool(re.search(r"\w+:\w+", line.split('::')[1])):
+                                item["label"] = line.split('::')[1]
                             break
 
-                        elif is_theorem == 1:
+                        elif is_theorem:
                             # コメントの場合は無視
                             if word == "::":
                                 break
-                            
-                            file_abs_dictionary.write(f" {word}")
+                            item["text"] += " " + word
 
                             # ";"はtheoremの最後の文字なため、改行しtheoremに関する変数を初期化している
-                            if ";" in word:
-                                file_abs_dictionary.write("\n")
-                                is_theorem = 0
-                                theorem_line_no = 0
-                                is_comment = 0
+                            if word[-1] == ";":
+                                if item["label"] != "":
+                                    abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
+                                item = {
+                                    "title": "",
+                                    "line_no": "",
+                                    "filename": file,
+                                    "label": "",
+                                    "text": ""
+                                }
+                                is_theorem = False
+                                theorem_line_no = False
+                                is_comment = False
 
                         elif word == "definition" and word_no == 0:
-                            is_definition_block = 1
+                            is_definition_block = True
+                            item["title"] = "definition"
 
-                        elif is_definition_block == 1:
+                        elif is_definition_block == True:
                             
                             if "end" in line and ";" in line:
-                                is_definition_block = 0
-                                is_definition = 0
+                                is_definition_block = False
+                                is_definition = False
                                 common_definition_statement = []
                                 indivisual_definition_statement = []
                                 break
@@ -96,37 +123,52 @@ def create_abs_dictionary():
                             elif word == ":::":
                                 break
                             
-                            elif is_definition == 0 and word != "::":
+                            elif not is_definition and word != "::":
                                 # definition let ~
                                 # 等の場合があるためdefinitionが含まれていたら除く
                                 common_definition_statement.append(line.replace("definition", ""))
                                 break
                             
                             # definition内かつ最終行でない場合のとき
-                            elif is_definition == 1 and ";" not in line:
+                            elif is_definition and ";" not in line:
                                 indivisual_definition_statement.append(line)
                                 break
                             
                             # definitionのラベルがある場合
-                            elif word == "::" and is_definition == 0:
-                                is_definition = 1
+                            elif word == "::" and not is_definition:
+                                is_definition = True
                                 # line.split('::')[1].replace(' ','')はラベル名、のちの処理を簡略するためラベル名にある" "を除いている
                                 # 例
                                 # ABCMIZ_0:def 1 -> ABCMIZ_0:def1
-                                file_abs_dictionary.write(f"definition {line_no} {file} {line.split('::')[1].replace(' ','')} ")
-                                if len(common_definition_statement) >= 1:
-                                    indivisual_definition_statement.append(common_definition_statement.pop())
+                                item["title"] = "definition"
+                                item["line_no"] = line_no
+                                if bool(re.search(r"\w+:\w+", line.split('::')[1].replace(' ',''))):
+                                    item["label"] = line.split('::')[1].replace(' ','')
+                                if common_definition_statement:
+                                    while common_definition_statement[-1][-1] != ";":
+                                        indivisual_definition_statement.append(common_definition_statement.pop())
+                                        if not common_definition_statement:
+                                            break
                                 break
 
-                            # definitionの最後
-                            elif line[-1] == ";" and is_definition == 1:
+                            # definitionのラベル部分の最後
+                            elif ";" in line and is_definition:
                                 indivisual_definition_statement.append(line)
-                                is_definition = 0
-                                file_abs_dictionary.write(f"{' '.join(common_definition_statement)} {' '.join(indivisual_definition_statement)}\n")
+                                is_definition = False
+                                item["text"] = ' '.join(common_definition_statement) + " " + ' '.join(indivisual_definition_statement)
+                                if item["label"]:
+                                    abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
+                                item = {
+                                    "title": "",
+                                    "line_no": "",
+                                    "filename": file,
+                                    "label": "",
+                                    "text": ""
+                                }
                                 indivisual_definition_statement = []
                                 break
 
-def processing_variables_with_emparser(line):
+def processing_variables_with_emparser(line, lexer):
     """
     変数を___に変更し、最期に変数の種類と数を入れている
     例
@@ -135,11 +177,6 @@ def processing_variables_with_emparser(line):
     return
     let ___ be RelStr ; attr ___ is Noetherian means the InternalRel of ___ is co-well_founded ; 1 3 
     """
-    DATA_DIR = Path("emparser/data")
-    ABS_DIR = os.path.join(DATA_DIR, 'mml.vct')
-    lexer = Lexer()
-    lexer.load_symbol_dict(ABS_DIR)
-    lexer.build_len2symbol()
 
     variable2appearance = defaultdict(int)
 
