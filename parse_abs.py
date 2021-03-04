@@ -192,7 +192,7 @@ def processing_variables_with_emparser(line, lexer):
             tokenized_lines[i] = "___"
         tokenized_lines[i] = re.sub("__[^_]+_", "", tokenized_lines[i])
 
-    return f"{' '.join(tokenized_lines[1:])} {len(variable2appearance)} {sum(variable2appearance.values())}"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+    return f"{' '.join(tokenized_lines[1:])} {'____ '*len(variable2appearance)}"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 def create_document_vectors():
     """
