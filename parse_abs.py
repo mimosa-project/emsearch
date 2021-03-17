@@ -26,7 +26,6 @@ RESERVED_WORDS = set(["according", "aggregate", "all", "and", "antonym", "are", 
                   "$6", "&7", "$8", "$9", "$10", "(#", "#)"])
 
 def is_symbol(word):
-    # symbolならTrueを返し、そうでないならFalseを返す関数
     if "__" in word and "_" in word.replace("__", ""):
         return True
 
@@ -60,16 +59,18 @@ def create_abs_dictionary():
 def save_abs_dictionary_by_theorem_or_definition(abs_dictionary_file, file, f):
     lines = f.readlines()
 
-    is_definition_block = False # definitionのブロック内にあるかどうか  definition ~~ end; までの部分
+    state = {
+        "is_definition_block": False, # definitionのブロック内にあるかどうか  definition ~~ end; までの部分
 
-    is_theorem = False # theoremの中にあるかどうか　theorem ~~ ; までの部分
+        "is_theorem": False, # theoremの中にあるかどうか　theorem ~~ ; までの部分
 
-    is_definition = False # definitionのラベル内かどうか
+        "is_definition": False # definitionのラベル内かどうか
+    }
 
     common_definition_statement = [] # 変数定義などのdefinitionの共通部分の要素
 
     indivisual_definition_statement = [] # definitionのラベルごとの要素
-
+    
     # abs_dictionaryに保存する情報
     item = {
         "title": "",
@@ -85,75 +86,31 @@ def save_abs_dictionary_by_theorem_or_definition(abs_dictionary_file, file, f):
         words = line.split()
 
         for word_no, word in enumerate(words): 
-            if word == "::" and word_no == False and is_definition_block == False and is_theorem == False:
+            if word == "::" and word_no == 0 and state["is_definition_block"] == False and state["is_theorem"] == False:
                 break
 
             elif word == "theorem" and word_no == 0:
-                is_theorem = True
+                state["is_theorem"] = True
                 item["title"] = "theorem"
                 item["line_no"] = line_no
                 if bool(re.search(r"\w+:\w+", line.split('::')[1])):
                     item["label"] = line.split('::')[1]
                 break
 
-            elif is_theorem:
+            elif state["is_theorem"] == True:
                 # コメントの場合は無視
                 if word == "::":
                     break
-                item["text"] += " " + word
-
-                # ";"はtheoremの最後の文字なため、改行しtheoremに関する変数を初期化している
-                if word[-1] == ";":
-                    if item["label"] != "":
-                        abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
-                    clear_item(item, file)
-                    is_theorem = False
-                    theorem_line_no = False
-                    is_comment = False
-
+                on_theorem(item, state, file, word, line, line_no, abs_dictionary_file)
+    
             elif word == "definition" and word_no == 0:
-                is_definition_block = True
+                state["is_definition_block"] = True
                 item["title"] = "definition"
 
-            elif is_definition_block == True:
-                            
-                if "end" in line and ";" in line:
-                    is_definition_block = False
-                    is_definition = False
-                    common_definition_statement = []
-                    indivisual_definition_statement = []
-                    break
-                                                 
-                elif word == ":::":
-                    break
-
-                elif not is_definition and word != "::":
-                    # definition let ~
-                    # 等の場合があるためdefinitionが含まれていたら除く
-                    common_definition_statement.append(line.replace("definition", ""))
-                    break
-
-                # definition内かつ最終行でない場合のとき
-                elif is_definition and ";" not in line:
-                    indivisual_definition_statement.append(line)
-                    break
-
-                # definitionのラベルがある場合
-                elif word == "::" and not is_definition:
-                    is_definition = True
-                    on_definition_label(item, line, line_no, common_definition_statement, indivisual_definition_statement)
-                    break
-                                                    
-                # definitionのラベル部分の最後
-                elif ";" in line and is_definition:
-                    indivisual_definition_statement.append(line)
-                    is_definition = False
-                    item["text"] = ' '.join(common_definition_statement) + " " + ' '.join(indivisual_definition_statement)
-                    if item["label"]:
-                        abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
-                    clear_item(item, file)
-                    indivisual_definition_statement = []
-                    break
+            elif state["is_definition_block"] == True:
+                on_definition_block(item, state, file, word, line, line_no, common_definition_statement, indivisual_definition_statement, abs_dictionary_file)
+                break
+                
 
 def clear_item(item, file):
     item["title"] = ""
@@ -161,6 +118,50 @@ def clear_item(item, file):
     item["filename"] = file
     item["label"] = ""
     item["text"] = ""
+
+def on_theorem(item, state, file, word, line, line_no, abs_dictionary_file):
+    item["text"] += " " + word
+
+    # ";"はtheoremの最後の文字なため、改行しtheoremに関する変数を初期化している
+    if word[-1] == ";":
+        if item["label"] != "":
+            abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
+        clear_item(item, file)
+        state["is_theorem"] = False
+
+def on_definition_block(item, state, file, word, line, line_no, common_definition_statement, indivisual_definition_statement, abs_dictionary_file):
+    if "end" in line and ";" in line:
+        state["is_definition_block"] = False
+        state["is_definition"] = False
+        common_definition_statement = []
+        indivisual_definition_statement = []
+                                                 
+    elif word == ":::":
+        pass
+
+    elif state["is_definition"] == False and word != "::":
+        # definition let ~
+        # 等の場合があるためdefinitionが含まれていたら除く
+        common_definition_statement.append(line.replace("definition", ""))
+
+    # definition内かつ最終行でない場合のとき
+    elif state["is_definition"] and ";" not in line:
+        indivisual_definition_statement.append(line)
+
+    # definitionのラベルがある場合
+    elif word == "::" and state["is_definition"] == False:
+        state["is_definition"] = True
+        on_definition_label(item, line, line_no, common_definition_statement, indivisual_definition_statement)
+                                                    
+    # definitionのラベル部分の最後
+    elif ";" in line and state["is_definition"]:
+        indivisual_definition_statement.append(line)
+        state["is_definition"] = False
+        item["text"] = ' '.join(common_definition_statement) + " " + ' '.join(indivisual_definition_statement)
+        if item["label"]:
+            abs_dictionary_file.write(f"{item['title']} {item['line_no']} {item['filename']} {item['label']} {item['text']}\n")
+        clear_item(item, file)
+        indivisual_definition_statement = []
 
 def on_definition_label(item, line, line_no, common_definition_statement, indivisual_definition_statement):
     # line.split('::')[1].replace(' ','')はラベル名、のちの処理を簡略するためラベル名にある" "を除いている
@@ -237,4 +238,4 @@ def save_byte_index_of_lines(input, output):
                 byte_indices.append(f.tell())
 
             pickle.dump(byte_indices, fi)
-            
+
