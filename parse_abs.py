@@ -177,7 +177,7 @@ def on_definition_label(item, line, line_no, common_definition_statement, indivi
             if not common_definition_statement:
                 break
 
-def replace_variable_name_to_underscore(line, lexer):
+def rename_variable_and_symbol(line, lexer):
     """
     変数を___に変更し、最期に変数の種類の____を入れている
     例
@@ -238,4 +238,3 @@ def save_byte_index_of_lines(input, output):
                 byte_indices.append(f.tell())
 
             pickle.dump(byte_indices, fi)
-
