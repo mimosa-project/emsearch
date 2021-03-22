@@ -221,7 +221,7 @@ def create_document_vectors():
                 line = line.replace(",", " ") 
                 line = line.replace(";", "")
                 line = line.split()
-                file_document_vectors.write(f"{replace_variable_name_to_underscore(line[4:], lexer)} \n")
+                file_document_vectors.write(f"{rename_variable_and_symbol(line[4:], lexer)} \n")
 
 def save_byte_index_of_lines(input, output):
     """
