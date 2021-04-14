@@ -93,7 +93,7 @@ def save_abs_dictionary_by_theorem_or_definition(abs_dictionary_file, file, f):
                 state["is_theorem"] = True
                 item["title"] = "theorem"
                 item["line_no"] = line_no
-                if bool(re.search(r"\w+:\w+", line.split('::')[1])):
+                if line.split('::')[1].split(':')[1].strip().isdigit():
                     item["label"] = line.split('::')[1]
                 break
 
@@ -149,9 +149,9 @@ def on_definition_block(item, state, file, word, line, line_no, common_definitio
         indivisual_definition_statement.append(line)
 
     # definitionのラベルがある場合
-    elif word == "::" and state["is_definition"] == False:
+    elif word == "::" and state["is_definition"] == False and line.count(":") == 3:
         state["is_definition"] = True
-        on_definition_label(item, line, line_no, common_definition_statement, indivisual_definition_statement)
+        on_definition_label(item, state, line, line_no, common_definition_statement, indivisual_definition_statement)
                                                     
     # definitionのラベル部分の最後
     elif ";" in line and state["is_definition"]:
@@ -163,14 +163,20 @@ def on_definition_block(item, state, file, word, line, line_no, common_definitio
         clear_item(item, file)
         indivisual_definition_statement = []
 
-def on_definition_label(item, line, line_no, common_definition_statement, indivisual_definition_statement):
+def on_definition_label(item, state, line, line_no, common_definition_statement, indivisual_definition_statement):
     # line.split('::')[1].replace(' ','')はラベル名、のちの処理を簡略するためラベル名にある" "を除いている
     # 例
     # ABCMIZ_0:def 1 -> ABCMIZ_0:def1
     item["title"] = "definition"
     item["line_no"] = line_no
-    if bool(re.search(r"\w+:\w+", line.split('::')[1].replace(' ',''))): # コメント部分がラベル名かどうか判断している
+    
+    # ラベルかどうかを判定している
+    # ラベルの場合、～：数字defとなっているのでdefを含んでいるかどうかと数字が含まれているかどうかで判定している"
+    if "def" in line.split('::')[1].split(':')[1] and any(s.isdigit() for s in line.split('::')[1].split(':')[1]):  
         item["label"] = line.split('::')[1].replace(' ','')
+    else:
+        state["is_definition"] = False
+        return
     if common_definition_statement:
         while common_definition_statement[-1][-1] != ";":
             indivisual_definition_statement.append(common_definition_statement.pop())
