@@ -93,7 +93,14 @@ def save_abs_dictionary_by_theorem_or_definition(abs_dictionary_file, file, f):
                 state["is_theorem"] = True
                 item["title"] = "theorem"
                 item["line_no"] = line_no
-                if line.split('::')[1].split(':')[1].strip().isdigit():
+                
+                # ラベル名は、"::ラベル:番号"となっており、変数に番号部分を格納する
+                # 例：ABCMIZ_0:1の1の部分
+                label_number = line.split('::')[1].split(':')[1].strip()
+                
+                # ラベルかどうかを判定している
+                # ラベルの場合、label_numberが数字のみになる
+                if label_number.isdigit():
                     item["label"] = line.split('::')[1]
                 break
 
@@ -170,9 +177,13 @@ def on_definition_label(item, state, line, line_no, common_definition_statement,
     item["title"] = "definition"
     item["line_no"] = line_no
     
+    # ラベル名は、"::ラベル:番号"となっており、変数に番号部分を格納する
+    # 例：ABCMIZ_0:def1のdef1の部分
+    label_def_number = line.split('::')[1].split(':')[1]
+    
     # ラベルかどうかを判定している
-    # ラベルの場合、～：数字defとなっているのでdefを含んでいるかどうかと数字が含まれているかどうかで判定している"
-    if "def" in line.split('::')[1].split(':')[1] and any(s.isdigit() for s in line.split('::')[1].split(':')[1]):  
+    # ラベルの場合、"～：def数字"となっているのでdefを含んでいるかどうかと数字が含まれているかどうかで判定している
+    if "def" in label_def_number and any(s.isdigit() for s in label_def_number):  
         item["label"] = line.split('::')[1].replace(' ','')
     else:
         state["is_definition"] = False
